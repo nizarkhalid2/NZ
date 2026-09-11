@@ -1,0 +1,7 @@
+GitHub Pages background fix
+
+The desktop wallpaper is duplicated at the project root as:
+  background.jpg
+
+index.html contains a fallback background using ./background.jpg.
+The original Framer image and all animation/runtime files remain unchanged.
