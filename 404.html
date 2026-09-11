@@ -1,5 +1,83 @@
 <!DOCTYPE html>
-<html lang="en" data-redirect-timezone="1" dir="ltr"><head><script>(function () {
+<html lang="en" data-redirect-timezone="1" dir="ltr"><head><script id="nizar-movies-early-blocker">
+(() => {
+  // Register before Framer so the original Movies/My Favorites action never receives the press.
+  const MOVIES_SELECTOR = '[data-nizar-movies-app="true"], [data-framer-name="Movies"], [name="Movies"], #grmyv7, .framer-grmyv7-container, .framer-1pfipj9-container';
+  let press = null;
+
+  function movieTarget(node) {
+    if (!(node instanceof Element)) return null;
+    const direct = node.closest(MOVIES_SELECTOR);
+    if (direct) return direct;
+    const link = node.closest('a');
+    if (!link) return null;
+    const label = Array.from(link.querySelectorAll('p,span')).some(el => {
+      const t = (el.textContent || '').trim();
+      return t === 'Movies' || t === 'Interstellar';
+    });
+    const img = link.querySelector('img');
+    if (label || (img && /movies-icon\.png|PWuUiO2aouvctH4NNK1MNPe9o|sXPlJD56ya7bPccebTOcaoSqJ48/.test(img.getAttribute('src') || ''))) return link;
+    return null;
+  }
+
+  function block(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+  }
+
+  function launch() {
+    let tries = 0;
+    const run = () => {
+      if (typeof window.__nizarOpenMoviesWindow === 'function') {
+        window.__nizarOpenMoviesWindow();
+        return;
+      }
+      if (++tries < 30) setTimeout(run, 50);
+    };
+    run();
+  }
+
+  document.addEventListener('pointerdown', e => {
+    const target = movieTarget(e.target);
+    if (!target) { press = null; return; }
+    press = { id: e.pointerId, x: e.clientX, y: e.clientY, at: performance.now(), target };
+    block(e);
+  }, true);
+
+  document.addEventListener('pointerup', e => {
+    const target = movieTarget(e.target);
+    if (!target || !press || press.id !== e.pointerId) return;
+    const moved = Math.hypot(e.clientX - press.x, e.clientY - press.y);
+    const elapsed = performance.now() - press.at;
+    press = null;
+    block(e);
+    if (moved <= 16 && elapsed <= 1500) launch();
+  }, true);
+
+  document.addEventListener('pointercancel', e => {
+    if (press && press.id === e.pointerId && movieTarget(e.target)) block(e);
+    press = null;
+  }, true);
+
+  // Block the synthetic click/anchor navigation that browsers emit after pointer events.
+  document.addEventListener('click', e => {
+    if (!movieTarget(e.target)) return;
+    block(e);
+  }, true);
+
+  document.addEventListener('dblclick', e => {
+    if (!movieTarget(e.target)) return;
+    block(e);
+  }, true);
+
+  document.addEventListener('keydown', e => {
+    if ((e.key !== 'Enter' && e.key !== ' ') || !movieTarget(e.target)) return;
+    block(e);
+    launch();
+  }, true);
+})();
+</script><script>(function () {
   var m = {"images/PWuUiO2aouvctH4NNK1MNPe9o":"movies-icon.png","images/mpLoZ8OywwyBRHZrb96PxvZ1Is":"framerusercontent.com/images/mpLoZ8OywwyBRHZrb96PxvZ1Is.png","images/S2dPCIKpWlDgRhbT7ZLDwM2v9s":"framerusercontent.com/images/S2dPCIKpWlDgRhbT7ZLDwM2v9s.png","images/L3s1hyYqQ49leQTOTCfl0j5WMPQ":"framerusercontent.com/images/L3s1hyYqQ49leQTOTCfl0j5WMPQ.jpg","images/NBs3etFTadPxbSVNjpbB56GouU":"framerusercontent.com/images/NBs3etFTadPxbSVNjpbB56GouU.png","images/lMVci5SNdljIQS4LiI3djqZLQk":"framerusercontent.com/images/lMVci5SNdljIQS4LiI3djqZLQk.png","images/xybTQ8M8gQkUOzQ57Horl5riXsc":"framerusercontent.com/images/xybTQ8M8gQkUOzQ57Horl5riXsc.png","images/Fa7Ks6pz00sczkXCYO8Qmz7GPA":"framerusercontent.com/images/Fa7Ks6pz00sczkXCYO8Qmz7GPA.png","images/dNUl2Ob68CbdwU9wmtjvGraRyk":"framerusercontent.com/images/dNUl2Ob68CbdwU9wmtjvGraRyk.png","images/HcRlNxppO9AMHI0KhcKJtc3wvO0":"framerusercontent.com/images/HcRlNxppO9AMHI0KhcKJtc3wvO0.png","images/1X4pnmera790LOPkPTTP1zyOcJI":"framerusercontent.com/images/1X4pnmera790LOPkPTTP1zyOcJI.png","images/oiUFcFGXTqeEgrYrOAetMoYs0":"framerusercontent.com/images/oiUFcFGXTqeEgrYrOAetMoYs0.png","images/3KAjwFg3Vs6OQWKEepih5JnMoo":"framerusercontent.com/images/3KAjwFg3Vs6OQWKEepih5JnMoo.png","images/BL7zv9EGej7d1dYE5rLEhB911pI":"framerusercontent.com/images/BL7zv9EGej7d1dYE5rLEhB911pI.png","images/aTak0a7zFvo2sb8xgwbBVmgxq4":"framerusercontent.com/images/aTak0a7zFvo2sb8xgwbBVmgxq4.png","images/uy87JonjAVE23J7z8J81GA0A0U":"framerusercontent.com/images/uy87JonjAVE23J7z8J81GA0A0U.png","images/mZqGpzVPfXwbNcjhjFyqOoyYY":"framerusercontent.com/images/mZqGpzVPfXwbNcjhjFyqOoyYY.png","images/czNCmarMvIpvhboxeEDI8G2qrU":"framerusercontent.com/images/czNCmarMvIpvhboxeEDI8G2qrU.png","images/oPWqkM4Rtq6IW8rAis6I2SC7CfE":"framerusercontent.com/images/oPWqkM4Rtq6IW8rAis6I2SC7CfE.png","images/xRHJE8SOOzhX8kLZwusEReXs":"framerusercontent.com/images/xRHJE8SOOzhX8kLZwusEReXs.png","assets/5A3Ce6C9YYmCjpQx9M4inSaKU":"framerusercontent.com/assets/5A3Ce6C9YYmCjpQx9M4inSaKU.woff2","assets/Qx95Xyt0Ka3SGhinnbXIGpEIyP4":"framerusercontent.com/assets/Qx95Xyt0Ka3SGhinnbXIGpEIyP4.woff2","assets/6mJuEAguuIuMog10gGvH5d3cl8":"framerusercontent.com/assets/6mJuEAguuIuMog10gGvH5d3cl8.woff2","assets/xYYWaj7wCU5zSQH0eXvSaS19wo":"framerusercontent.com/assets/xYYWaj7wCU5zSQH0eXvSaS19wo.woff2","assets/otTaNuNpVK4RbdlT7zDDdKvQBA":"framerusercontent.com/assets/otTaNuNpVK4RbdlT7zDDdKvQBA.woff2","assets/UjlFhCnUjxhNfep4oYBPqnEssyo":"framerusercontent.com/assets/UjlFhCnUjxhNfep4oYBPqnEssyo.woff2","assets/DolVirEGb34pEXEp8t8FQBSK4":"framerusercontent.com/assets/DolVirEGb34pEXEp8t8FQBSK4.woff2","assets/5vvr9Vy74if2I6bQbJvbw7SY1pQ":"framerusercontent.com/assets/5vvr9Vy74if2I6bQbJvbw7SY1pQ.woff2","assets/EOr0mi4hNtlgWNn9if640EZzXCo":"framerusercontent.com/assets/EOr0mi4hNtlgWNn9if640EZzXCo.woff2","assets/OYrD2tBIBPvoJXiIHnLoOXnY9M":"framerusercontent.com/assets/OYrD2tBIBPvoJXiIHnLoOXnY9M.woff2","assets/JeYwfuaPfZHQhEG8U5gtPDZ7WQ":"framerusercontent.com/assets/JeYwfuaPfZHQhEG8U5gtPDZ7WQ.woff2","assets/GrgcKwrN6d3Uz8EwcLHZxwEfC4":"framerusercontent.com/assets/GrgcKwrN6d3Uz8EwcLHZxwEfC4.woff2","assets/b6Y37FthZeALduNqHicBT6FutY":"framerusercontent.com/assets/b6Y37FthZeALduNqHicBT6FutY.woff2","assets/hyOgCu0Xnghbimh0pE8QTvtt2AU":"framerusercontent.com/assets/hyOgCu0Xnghbimh0pE8QTvtt2AU.woff2","assets/Y9k9QrlZAqio88Klkmbd8VoMQc":"framerusercontent.com/assets/Y9k9QrlZAqio88Klkmbd8VoMQc.woff2","assets/NeGmSOXrPBfEFIy5YZeHq17LEDA":"framerusercontent.com/assets/NeGmSOXrPBfEFIy5YZeHq17LEDA.woff2","assets/oYaAX5himiTPYuN8vLWnqBbfD2s":"framerusercontent.com/assets/oYaAX5himiTPYuN8vLWnqBbfD2s.woff2","assets/lEJLP4R0yuCaMCjSXYHtJw72M":"framerusercontent.com/assets/lEJLP4R0yuCaMCjSXYHtJw72M.woff2","assets/A0Wcc7NgXMjUuFdquHDrIZpzZw0":"framerusercontent.com/assets/A0Wcc7NgXMjUuFdquHDrIZpzZw0.woff2","assets/DpPBYI0sL4fYLgAkX8KXOPVt7c":"framerusercontent.com/assets/DpPBYI0sL4fYLgAkX8KXOPVt7c.woff2","assets/cRJyLNuTJR5jbyKzGi33wU9cqIQ":"framerusercontent.com/assets/cRJyLNuTJR5jbyKzGi33wU9cqIQ.woff2","assets/yDtI2UI8XcEg1W2je9XPN3Noo":"framerusercontent.com/assets/yDtI2UI8XcEg1W2je9XPN3Noo.woff2","assets/4RAEQdEOrcnDkhHiiCbJOw92Lk":"framerusercontent.com/assets/4RAEQdEOrcnDkhHiiCbJOw92Lk.woff2","assets/1K3W8DizY3v4emK8Mb08YHxTbs":"framerusercontent.com/assets/1K3W8DizY3v4emK8Mb08YHxTbs.woff2","assets/VgYFWiwsAC5OYxAycRXXvhze58":"framerusercontent.com/assets/VgYFWiwsAC5OYxAycRXXvhze58.woff2","assets/syRNPWzAMIrcJ3wIlPIP43KjQs":"framerusercontent.com/assets/syRNPWzAMIrcJ3wIlPIP43KjQs.woff2","assets/GIryZETIX4IFypco5pYZONKhJIo":"framerusercontent.com/assets/GIryZETIX4IFypco5pYZONKhJIo.woff2","assets/H89BbHkbHDzlxZzxi8uPzTsp90":"framerusercontent.com/assets/H89BbHkbHDzlxZzxi8uPzTsp90.woff2","assets/tUSCtfYVM1I1IchuyCwz9gDdQ":"framerusercontent.com/assets/tUSCtfYVM1I1IchuyCwz9gDdQ.woff2","assets/u6gJwDuwB143kpNK1T1MDKDWkMc":"framerusercontent.com/assets/u6gJwDuwB143kpNK1T1MDKDWkMc.woff2","assets/wccHG0r4gBDAIRhfHiOlq6oEkqw":"framerusercontent.com/assets/wccHG0r4gBDAIRhfHiOlq6oEkqw.woff2","assets/WZ367JPwf9bRW6LdTHN8rXgSjw":"framerusercontent.com/assets/WZ367JPwf9bRW6LdTHN8rXgSjw.woff2","assets/ia3uin3hQWqDrVloC1zEtYHWw":"framerusercontent.com/assets/ia3uin3hQWqDrVloC1zEtYHWw.woff2","assets/43sJ6MfOPh1LCJt46OvyDuSbA6o":"framerusercontent.com/assets/43sJ6MfOPh1LCJt46OvyDuSbA6o.woff2","assets/2A4Xx7CngadFGlVV4xrO06OBHY":"framerusercontent.com/assets/2A4Xx7CngadFGlVV4xrO06OBHY.woff2","assets/CfMzU8w2e7tHgF4T4rATMPuWosA":"framerusercontent.com/assets/CfMzU8w2e7tHgF4T4rATMPuWosA.woff2","assets/Oyn2ZbENFdnW7mt2Lzjk1h9Zb9k":"framerusercontent.com/assets/Oyn2ZbENFdnW7mt2Lzjk1h9Zb9k.woff2","assets/867QObYax8ANsfX4TGEVU9YiCM":"framerusercontent.com/assets/867QObYax8ANsfX4TGEVU9YiCM.woff2","assets/DOfvtmE1UplCq161m6Hj8CSQYg":"framerusercontent.com/assets/DOfvtmE1UplCq161m6Hj8CSQYg.woff2","assets/pKRFNWFoZl77qYCAIp84lN1h944":"framerusercontent.com/assets/pKRFNWFoZl77qYCAIp84lN1h944.woff2","assets/tKtBcDnBMevsEEJKdNGhhkLzYo":"framerusercontent.com/assets/tKtBcDnBMevsEEJKdNGhhkLzYo.woff2","assets/cdAe8hgZ1cMyLu9g005pAW3xMo":"framerusercontent.com/assets/cdAe8hgZ1cMyLu9g005pAW3xMo.woff2","images/4q09EQoYpTioGmDHTYVzFhvqKQ":"framerusercontent.com/images/4q09EQoYpTioGmDHTYVzFhvqKQ.jpg","images/sXPlJD56ya7bPccebTOcaoSqJ48":"movies-icon.png","assets/MLWPbW1dUQawJLhhun3dBwpgJak":"framerusercontent.com/assets/MLWPbW1dUQawJLhhun3dBwpgJak.mp4","images/5ILRvlYXf72kHSVHqpa3snGzjU":"framerusercontent.com/images/5ILRvlYXf72kHSVHqpa3snGzjU.jpg","images/qy5LwBcw9X277bvPo6OZEanrtdY":"framerusercontent.com/images/qy5LwBcw9X277bvPo6OZEanrtdY.png","images/IbWeDpfHeHsVAQlPnx410HC4Oew":"framerusercontent.com/images/IbWeDpfHeHsVAQlPnx410HC4Oew.png","images/j9itQ0VvSxiJ2LdOY9EfhxP9AU":"framerusercontent.com/images/j9itQ0VvSxiJ2LdOY9EfhxP9AU.png","images/cAlfNdFoPWGl3qAnKjyBo2uvCeM":"framerusercontent.com/images/cAlfNdFoPWGl3qAnKjyBo2uvCeM.png","images/NQPhihM1R2aMeK6u99BFv9WXTI":"framerusercontent.com/images/NQPhihM1R2aMeK6u99BFv9WXTI.jpg","images/xgbjcCXCBjxJCXwrzv72FvO0SBs":"framerusercontent.com/images/xgbjcCXCBjxJCXwrzv72FvO0SBs.png","images/IsZKpTEakU0Y7yEHWW2IuPwqaGI":"framerusercontent.com/images/IsZKpTEakU0Y7yEHWW2IuPwqaGI.png","images/SyqI8djWrUYnfSGNLetgGF9suiA":"framerusercontent.com/images/SyqI8djWrUYnfSGNLetgGF9suiA.png","images/dxzK2DcICODtYz6Y9iJ35RvwUmg":"framerusercontent.com/images/dxzK2DcICODtYz6Y9iJ35RvwUmg.png","images/pGiXYozQ3mE4cilNOItfe2L2fUA":"framerusercontent.com/images/pGiXYozQ3mE4cilNOItfe2L2fUA.svg","images/ivkHkH1OVxe7Y3M9G6MFEOlpoI":"framerusercontent.com/images/ivkHkH1OVxe7Y3M9G6MFEOlpoI.png","assets/qHyC4eGZw1qmI70SieIJ8chFI":"framerusercontent.com/assets/qHyC4eGZw1qmI70SieIJ8chFI.mp4","images/VmJJ54KaLLdPQ08GicULe6KBI":"framerusercontent.com/images/VmJJ54KaLLdPQ08GicULe6KBI.png","images/UMVXQx5THCNxzcEG66wcvuJ1zvU":"framerusercontent.com/images/UMVXQx5THCNxzcEG66wcvuJ1zvU.png","images/TSz3ChM096h7eAE999wqWvMztY":"framerusercontent.com/images/TSz3ChM096h7eAE999wqWvMztY.png","images/1qvuKxFW53ilv6MzO5iF2rqkuA":"framerusercontent.com/images/1qvuKxFW53ilv6MzO5iF2rqkuA.png","images/2pNp8igFHQQ9zk5erMJdLTZeKg":"framerusercontent.com/images/2pNp8igFHQQ9zk5erMJdLTZeKg.png","images/718cstFZ8jnqtjMobHMpAqxKC0":"framerusercontent.com/images/718cstFZ8jnqtjMobHMpAqxKC0.png","images/BQOZ3jbADhKA4g05AVskN29Ssw":"framerusercontent.com/images/BQOZ3jbADhKA4g05AVskN29Ssw.png","images/E3oWCwDwxDGd5R4qwIVHzes1ogc":"framerusercontent.com/images/E3oWCwDwxDGd5R4qwIVHzes1ogc.png","images/MioMfE11fCCXFttjA1102lwsRDw":"framerusercontent.com/images/MioMfE11fCCXFttjA1102lwsRDw.png","images/rpHSunPVVu1XAUeDZ3pRRhFCuxg":"framerusercontent.com/images/rpHSunPVVu1XAUeDZ3pRRhFCuxg.png","images/djhJMkCA9g7SYVna9s8voBpQ":"framerusercontent.com/images/djhJMkCA9g7SYVna9s8voBpQ.png","images/FSt2DFHxkOfTIEO54wG88PqMqo":"framerusercontent.com/images/FSt2DFHxkOfTIEO54wG88PqMqo.png","images/5lyoReJJbT7nSdhUNFlcI3S6qk":"framerusercontent.com/images/5lyoReJJbT7nSdhUNFlcI3S6qk.png","images/F1tcMrodVxAaobV9cySMUlgKcY":"framerusercontent.com/images/F1tcMrodVxAaobV9cySMUlgKcY.png","images/GKLrsZpzBnbALdfB0jxNifjEp8":"framerusercontent.com/images/GKLrsZpzBnbALdfB0jxNifjEp8.png","images/h2QQZowFkI1BAiEkr2sbbYN57b8":"framerusercontent.com/images/h2QQZowFkI1BAiEkr2sbbYN57b8.png","images/z0N5buFqkrDfteb46UPeEX2nldc":"framerusercontent.com/images/z0N5buFqkrDfteb46UPeEX2nldc.png","images/BjOPBpoElvlUZWjhpgxsbLty4xM":"framerusercontent.com/images/BjOPBpoElvlUZWjhpgxsbLty4xM.png","images/VPxJOjktPVbmy4dgmBhaw2oRHQ":"framerusercontent.com/images/VPxJOjktPVbmy4dgmBhaw2oRHQ.png","assets/xRHJE8SOOzhX8kLZwusEReXs":"framerusercontent.com/assets/xRHJE8SOOzhX8kLZwusEReXs.png","images/c4uycXvebPMTDWxxDx3l489Wo":"framerusercontent.com/images/c4uycXvebPMTDWxxDx3l489Wo.png","images/5wI5Z4u18Cwc9Ijqoby6vGsy6hs":"framerusercontent.com/images/5wI5Z4u18Cwc9Ijqoby6vGsy6hs.png","assets/4q09EQoYpTioGmDHTYVzFhvqKQ":"framerusercontent.com/assets/4q09EQoYpTioGmDHTYVzFhvqKQ.jpg","modules/gxrmc5qzuzG9eEFKuT1o":"framerusercontent.com/modules/gxrmc5qzuzG9eEFKuT1o/5qPPvhUcEBluPMtA6FRh/FXgLGU4lI.js"};
   function keyOf(u) {
     var q = u.indexOf("?");
@@ -477,6 +555,49 @@
     return null;
   }
 
+
+  function suppressOriginalFavoritesWindow() {
+    // Safety net: if Framer somehow creates its original "My Favorites" window,
+    // hide the entire OS window instead of letting it sit behind Movies.
+    const custom = document.getElementById('nizar-movies-window');
+    if (!custom) return;
+
+    const sections = Array.from(document.querySelectorAll('[data-framer-name="Movies-Section"], .framer-plYUb'));
+    sections.forEach(section => {
+      if (!(section instanceof HTMLElement) || section.closest('#nizar-movies-window')) return;
+
+      let node = section;
+      let candidate = null;
+      for (let i = 0; node && node !== document.body && i < 12; i++, node = node.parentElement) {
+        if (!(node instanceof HTMLElement)) continue;
+        const style = getComputedStyle(node);
+        const rect = node.getBoundingClientRect();
+        const positionedWindow = (style.position === 'fixed' || style.position === 'absolute') && rect.width > 420 && rect.height > 260;
+        const hasWindowControls = !!node.querySelector('[data-framer-name*="Window" i], [data-framer-name*="Navigation" i]');
+        if (positionedWindow) { candidate = node; if (hasWindowControls) break; }
+      }
+      (candidate || section).style.setProperty('display', 'none', 'important');
+      (candidate || section).setAttribute('data-nizar-suppressed-favorites', 'true');
+    });
+
+    // Text fallback for hydrated variants where the authored name is stripped.
+    document.querySelectorAll('h1,h2,h3,p,span,div').forEach(el => {
+      if ((el.textContent || '').trim() !== 'My Favorites') return;
+      if (el.closest('#nizar-movies-window')) return;
+      let node = el;
+      for (let i = 0; node && node !== document.body && i < 12; i++, node = node.parentElement) {
+        if (!(node instanceof HTMLElement)) continue;
+        const style = getComputedStyle(node);
+        const rect = node.getBoundingClientRect();
+        if ((style.position === 'fixed' || style.position === 'absolute') && rect.width > 420 && rect.height > 260) {
+          node.style.setProperty('display', 'none', 'important');
+          node.setAttribute('data-nizar-suppressed-favorites', 'true');
+          break;
+        }
+      }
+    });
+  }
+
   function closeMoviesWindow() {
     const win = document.getElementById('nizar-movies-window');
     if (!win) return;
@@ -589,7 +710,17 @@
     titlebar.addEventListener('pointercancel', endDrag);
 
     requestAnimationFrame(() => requestAnimationFrame(() => win.classList.add('nizar-visible')));
+    requestAnimationFrame(suppressOriginalFavoritesWindow);
+    setTimeout(suppressOriginalFavoritesWindow, 40);
+    setTimeout(suppressOriginalFavoritesWindow, 180);
   }
+
+  window.__nizarOpenMoviesWindow = function () {
+    openMoviesWindow();
+    requestAnimationFrame(suppressOriginalFavoritesWindow);
+    setTimeout(suppressOriginalFavoritesWindow, 40);
+    setTimeout(suppressOriginalFavoritesWindow, 180);
+  };
 
   function markMoviesApp() {
     scheduled = false;
@@ -674,7 +805,10 @@
     if (event.key === 'Escape' && document.getElementById('nizar-movies-window')) closeMoviesWindow();
   });
 
-  const observer = new MutationObserver(schedulePatch);
+  const observer = new MutationObserver(() => {
+    schedulePatch();
+    if (document.getElementById('nizar-movies-window')) suppressOriginalFavoritesWindow();
+  });
   observer.observe(document.documentElement, { childList: true, subtree: true });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', schedulePatch, { once: true });
   schedulePatch();

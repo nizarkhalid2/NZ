@@ -1,0 +1,6 @@
+Movies duplicate-window fix
+
+- Blocks Framer original Movies/My Favorites action before Framer receives the pointer event.
+- Opens only the embedded https://nizarkhalid2.github.io/try/ Movies window.
+- Safety observer suppresses the old My Favorites window if Framer creates it anyway.
+- Close / maximize / minimize controls are preserved.
