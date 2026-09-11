@@ -1,0 +1,8 @@
+Movies app update
+
+- Replaced the Interstellar desktop app label with Movies.
+- Replaced its icon with movies-icon.png.
+- Clicking/tapping the Movies app now opens:
+  https://nizarkhalid2.github.io/try/
+- Navigation opens in the same tab.
+- Framer animations and the Hello preloader fixes are preserved.
