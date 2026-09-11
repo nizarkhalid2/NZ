@@ -1,0 +1,6 @@
+FIXED: GitHub Pages hydration asset paths + Hello preloader opacity
+
+- Rewrote Framer runtime asset paths from ../../../framerusercontent.com/... to framerusercontent.com/... so hydration does not break images on GitHub Pages project sites.
+- Kept the Hello/Apple preloader background fully opaque while its original Framer mask/reveal animation runs.
+- The apps remain underneath and are revealed when the Hello screen lifts, as in the original Framer site.
+- No animation timings or interaction code were removed.
