@@ -1,0 +1,3 @@
+Movies app link fixed for Framer draggable icons.
+Target: https://nizarkhalid2.github.io/try/
+Uses native href + pointerup fallback.
