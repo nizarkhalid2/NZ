@@ -1,0 +1,13 @@
+طريقة الرفع إلى GitHub Pages
+
+1) فك ضغط ملف MyOS-GitHub-Pages.zip.
+2) أنشئ Repository جديد في GitHub.
+3) ارفع محتويات مجلد MyOS-GitHub-Pages بالكامل إلى جذر الـ Repository.
+   مهم: يجب أن يكون index.html في الصفحة الرئيسية للـ Repository، وليس داخل مجلد إضافي.
+4) اعمل Commit.
+5) افتح Settings > Pages.
+6) Build and deployment > Deploy from a branch.
+7) اختر main ثم /(root) واضغط Save.
+8) انتظر دقيقة أو دقيقتين وسيظهر رابط الموقع.
+
+تم الاحتفاظ بملفات Framer JavaScript وMotion والصور والفيديوهات والخطوط والملفات اللازمة للتفاعلات الموجودة في التصدير.
