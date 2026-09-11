@@ -323,16 +323,161 @@ html, body {
 
 
 
-<!-- NIZAR: Movies app guaranteed external-link patch -->
-<style id="nizar-movies-app-style">
+<!-- NIZAR: Movies app opens as an in-desktop browser window -->
+<style id="nizar-movies-window-style">
   [data-nizar-movies-app="true"], [name="Movies"], [data-framer-name="Movies"] { cursor: pointer !important; }
+
+  #nizar-movies-window {
+    position: fixed;
+    z-index: 2147483000;
+    left: 50%;
+    top: 51%;
+    width: min(92vw, 1380px);
+    height: min(82vh, 860px);
+    transform: translate(-50%, -50%) scale(.985);
+    background: #fff;
+    border: 1px solid rgba(0,0,0,.18);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 28px 90px rgba(0,0,0,.32), 0 2px 10px rgba(0,0,0,.16);
+    opacity: 0;
+    transition: opacity .18s ease, transform .18s ease, width .22s ease, height .22s ease, left .22s ease, top .22s ease, border-radius .22s ease;
+    isolation: isolate;
+  }
+  #nizar-movies-window.nizar-visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  #nizar-movies-window.nizar-maximized {
+    left: 6px;
+    top: 32px;
+    width: calc(100vw - 12px);
+    height: calc(100vh - 38px);
+    transform: none;
+    border-radius: 12px;
+  }
+  #nizar-movies-window.nizar-maximized.nizar-visible { transform: none; }
+  #nizar-movies-window.nizar-minimized {
+    left: 16px;
+    top: auto;
+    bottom: 16px;
+    width: 310px;
+    height: 42px;
+    transform: none;
+    border-radius: 12px;
+  }
+  #nizar-movies-window.nizar-minimized.nizar-visible { transform: none; }
+
+  .nizar-movies-titlebar {
+    height: 42px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    background: rgba(255,255,255,.97);
+    border-bottom: 1px solid rgba(0,0,0,.11);
+    user-select: none;
+    touch-action: none;
+    cursor: grab;
+  }
+  .nizar-movies-titlebar:active { cursor: grabbing; }
+  .nizar-movies-controls {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding-left: 14px;
+    height: 100%;
+    z-index: 2;
+  }
+  .nizar-window-control {
+    width: 12px;
+    height: 12px;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    flex: 0 0 12px;
+    transition: transform .12s ease, opacity .12s ease;
+  }
+  .nizar-window-control:hover { transform: scale(1.14); }
+  .nizar-window-control:active { transform: scale(.93); }
+  .nizar-window-close { border-radius: 50%; background: #090909; }
+  .nizar-window-max { border-radius: 2px; background: #616161; }
+  .nizar-window-min {
+    width: 0;
+    height: 0;
+    flex-basis: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-bottom: 12px solid #9d9d9d;
+    background: transparent;
+    border-radius: 0;
+  }
+  .nizar-movies-window-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font: 500 12px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: rgba(0,0,0,.57);
+    pointer-events: none;
+  }
+  .nizar-movies-frame-wrap {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 42px;
+    background: #fff;
+  }
+  #nizar-movies-window.nizar-minimized .nizar-movies-frame-wrap { display: none; }
+  #nizar-movies-window.nizar-minimized .nizar-movies-window-title { cursor: pointer; pointer-events: auto; }
+  .nizar-movies-loading {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: #fff;
+    z-index: 1;
+    font: 500 13px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: #555;
+    transition: opacity .2s ease, visibility .2s ease;
+  }
+  .nizar-movies-loading.nizar-loaded { opacity: 0; visibility: hidden; }
+  .nizar-movies-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #dedede;
+    border-top-color: #111;
+    border-radius: 50%;
+    animation: nizar-spin .7s linear infinite;
+    margin: 0 auto 10px;
+  }
+  @keyframes nizar-spin { to { transform: rotate(360deg); } }
+  .nizar-movies-iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+    background: #fff;
+  }
+
+  @media (max-width: 700px) {
+    #nizar-movies-window {
+      width: calc(100vw - 18px);
+      height: calc(100vh - 58px);
+      top: calc(50% + 14px);
+      border-radius: 14px;
+    }
+    #nizar-movies-window.nizar-maximized {
+      left: 4px;
+      top: 30px;
+      width: calc(100vw - 8px);
+      height: calc(100vh - 34px);
+    }
+  }
 </style>
-<script id="nizar-movies-app-patch">
+<script id="nizar-movies-window-patch">
 (() => {
   const MOVIES_URL = "https://nizarkhalid2.github.io/try/";
   const ICON_URL = "movies-icon.png";
   let scheduled = false;
   let press = null;
+  let drag = null;
 
   function isMoviesElement(el) {
     if (!(el instanceof Element)) return null;
@@ -347,13 +492,118 @@ html, body {
     return null;
   }
 
-  function goMovies(event) {
+  function closeMoviesWindow() {
+    const win = document.getElementById('nizar-movies-window');
+    if (!win) return;
+    win.classList.remove('nizar-visible');
+    setTimeout(() => win.remove(), 190);
+  }
+
+  function toggleMaximize() {
+    const win = document.getElementById('nizar-movies-window');
+    if (!win) return;
+    if (win.classList.contains('nizar-minimized')) win.classList.remove('nizar-minimized');
+    win.classList.toggle('nizar-maximized');
+    if (!win.classList.contains('nizar-maximized')) {
+      win.style.left = '';
+      win.style.top = '';
+      win.style.bottom = '';
+    }
+  }
+
+  function toggleMinimize() {
+    const win = document.getElementById('nizar-movies-window');
+    if (!win) return;
+    const shouldMinimize = !win.classList.contains('nizar-minimized');
+    win.classList.toggle('nizar-minimized', shouldMinimize);
+    if (shouldMinimize) {
+      win.classList.remove('nizar-maximized');
+      win.style.left = '';
+      win.style.top = '';
+      win.style.bottom = '';
+    }
+  }
+
+  function openMoviesWindow(event) {
     if (event) {
       event.preventDefault();
       event.stopPropagation();
       if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
     }
-    window.location.href = MOVIES_URL;
+
+    let win = document.getElementById('nizar-movies-window');
+    if (win) {
+      win.classList.remove('nizar-minimized');
+      win.classList.add('nizar-visible');
+      win.style.zIndex = String(2147483000 + Math.floor(Math.random() * 100));
+      return;
+    }
+
+    win = document.createElement('section');
+    win.id = 'nizar-movies-window';
+    win.setAttribute('role', 'dialog');
+    win.setAttribute('aria-label', 'Movies');
+    win.innerHTML = `
+      <div class="nizar-movies-titlebar" data-nizar-window-drag>
+        <div class="nizar-movies-controls">
+          <button class="nizar-window-control nizar-window-close" type="button" aria-label="Close Movies" title="Close"></button>
+          <button class="nizar-window-control nizar-window-max" type="button" aria-label="Maximize Movies" title="Maximize / Restore"></button>
+          <button class="nizar-window-control nizar-window-min" type="button" aria-label="Minimize Movies" title="Minimize / Restore"></button>
+        </div>
+        <div class="nizar-movies-window-title">Movies</div>
+      </div>
+      <div class="nizar-movies-frame-wrap">
+        <div class="nizar-movies-loading"><div><div class="nizar-movies-spinner"></div>Loading Movies…</div></div>
+        <iframe class="nizar-movies-iframe" src="${MOVIES_URL}" title="Movies" allow="fullscreen; autoplay; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      </div>`;
+
+    document.body.appendChild(win);
+
+    const iframe = win.querySelector('.nizar-movies-iframe');
+    const loading = win.querySelector('.nizar-movies-loading');
+    iframe.addEventListener('load', () => loading.classList.add('nizar-loaded'), { once: true });
+    // Avoid a permanent loader if the browser delays the load event.
+    setTimeout(() => loading.classList.add('nizar-loaded'), 6000);
+
+    win.querySelector('.nizar-window-close').addEventListener('click', e => { e.stopPropagation(); closeMoviesWindow(); });
+    win.querySelector('.nizar-window-max').addEventListener('click', e => { e.stopPropagation(); toggleMaximize(); });
+    win.querySelector('.nizar-window-min').addEventListener('click', e => { e.stopPropagation(); toggleMinimize(); });
+    win.querySelector('.nizar-movies-window-title').addEventListener('dblclick', e => { e.stopPropagation(); toggleMaximize(); });
+
+    const titlebar = win.querySelector('[data-nizar-window-drag]');
+    titlebar.addEventListener('dblclick', e => {
+      if (e.target.closest('.nizar-movies-controls')) return;
+      toggleMaximize();
+    });
+
+    titlebar.addEventListener('pointerdown', e => {
+      if (e.target.closest('.nizar-movies-controls')) return;
+      if (win.classList.contains('nizar-maximized') || win.classList.contains('nizar-minimized')) return;
+      const rect = win.getBoundingClientRect();
+      drag = { id: e.pointerId, dx: e.clientX - rect.left, dy: e.clientY - rect.top };
+      titlebar.setPointerCapture?.(e.pointerId);
+      e.preventDefault();
+    });
+    titlebar.addEventListener('pointermove', e => {
+      if (!drag || drag.id !== e.pointerId) return;
+      const w = win.offsetWidth, h = win.offsetHeight;
+      let x = e.clientX - drag.dx;
+      let y = e.clientY - drag.dy;
+      x = Math.max(0, Math.min(window.innerWidth - w, x));
+      y = Math.max(30, Math.min(window.innerHeight - 42, y));
+      win.style.left = `${x}px`;
+      win.style.top = `${y}px`;
+      win.style.bottom = 'auto';
+      win.style.transform = 'none';
+    });
+    const endDrag = e => {
+      if (!drag || (e.pointerId != null && drag.id !== e.pointerId)) return;
+      drag = null;
+    };
+    titlebar.addEventListener('pointerup', endDrag);
+    titlebar.addEventListener('pointercancel', endDrag);
+
+    requestAnimationFrame(() => requestAnimationFrame(() => win.classList.add('nizar-visible')));
   }
 
   function markMoviesApp() {
@@ -372,11 +622,14 @@ html, body {
     candidates.forEach(app => {
       if (!(app instanceof HTMLElement)) return;
       app.dataset.nizarMoviesApp = 'true';
-      app.setAttribute('role', app.tagName === 'A' ? 'link' : 'button');
+      app.setAttribute('role', 'button');
+      app.setAttribute('aria-label', 'Open Movies');
+      if (!app.hasAttribute('tabindex')) app.setAttribute('tabindex', '0');
 
       const links = app.matches('a') ? [app] : Array.from(app.querySelectorAll('a'));
       links.forEach(link => {
-        link.setAttribute('href', MOVIES_URL);
+        // Keep Framer's DOM shape but route interaction to the in-desktop window.
+        link.setAttribute('href', '#movies');
         link.setAttribute('target', '_self');
         link.dataset.nizarMoviesApp = 'true';
       });
@@ -402,7 +655,7 @@ html, body {
     requestAnimationFrame(markMoviesApp);
   }
 
-  // Framer treats desktop icons as draggable. Detect a short pointer press ourselves.
+  // Desktop icons in Framer are draggable, so distinguish a click from a drag.
   document.addEventListener('pointerdown', event => {
     const target = isMoviesElement(event.target);
     if (!target) { press = null; return; }
@@ -417,19 +670,24 @@ html, body {
     const dt = performance.now() - press.t;
     const sameApp = current && (current === press.target || current.closest?.('[data-nizar-movies-app="true"]') === press.target || press.target.contains?.(current));
     press = null;
-    if (sameApp && Math.hypot(dx, dy) <= 14 && dt <= 1200) goMovies(event);
+    if (sameApp && Math.hypot(dx, dy) <= 14 && dt <= 1200) openMoviesWindow(event);
   }, true);
 
   document.addEventListener('pointercancel', () => { press = null; }, true);
 
   document.addEventListener('click', event => {
-    if (isMoviesElement(event.target)) goMovies(event);
+    if (isMoviesElement(event.target)) openMoviesWindow(event);
   }, true);
 
   document.addEventListener('keydown', event => {
     if (event.key !== 'Enter' && event.key !== ' ') return;
-    if (isMoviesElement(event.target)) goMovies(event);
+    if (isMoviesElement(event.target)) openMoviesWindow(event);
   }, true);
+
+  // Escape closes the Movies window.
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && document.getElementById('nizar-movies-window')) closeMoviesWindow();
+  });
 
   const observer = new MutationObserver(schedulePatch);
   observer.observe(document.documentElement, { childList: true, subtree: true });
@@ -439,5 +697,4 @@ html, body {
   setTimeout(schedulePatch, 1500);
 })();
 </script>
-
 </body></html>

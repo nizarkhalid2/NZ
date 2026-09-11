@@ -1,0 +1,9 @@
+Movies app behavior updated:
+- Clicking Movies opens https://nizarkhalid2.github.io/try/ INSIDE the desktop window.
+- The old My Favorites / Interstellar placeholder content is not shown.
+- Black circle: close.
+- Square: maximize / restore.
+- Triangle: minimize / restore.
+- Double-click the title bar to maximize / restore.
+- Drag the title bar to move the window.
+- Escape closes the window.
