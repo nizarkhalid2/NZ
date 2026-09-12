@@ -1438,4 +1438,127 @@ html, body {
 })();
 </script>
 
+
+
+<!-- NIZAR: four dock placeholders + remove Framer badge -->
+<style id="nizar-soon-badge-style">
+  #__framer-badge-container,
+  #__framer-badge-container *,
+  .__framer-badge {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  #nizar-soon-toast {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(.94);
+    z-index: 2147483000;
+    min-width: 180px;
+    padding: 24px 34px;
+    border-radius: 22px;
+    background: rgba(20,20,22,.88);
+    color: #fff;
+    box-shadow: 0 22px 65px rgba(0,0,0,.38), inset 0 0 0 1px rgba(255,255,255,.13);
+    backdrop-filter: blur(22px) saturate(140%);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    font-family: "Mona Sans", Inter, Arial, sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -.02em;
+    text-align: center;
+    opacity: 0;
+    transition: opacity .16s ease, transform .16s ease;
+    pointer-events: none;
+  }
+  #nizar-soon-toast.nz-show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+</style>
+<script id="nizar-soon-badge-script">
+(()=>{
+  // These are the four visible dock icons in the screenshot: About, Projects, Gallery, Reel.
+  // Contact/Mail is deliberately NOT included so the mailbox keeps working.
+  const PLACEHOLDERS = [
+    '[data-framer-name="about"]', '[name="about"]', '.framer-1hiogi0-container',
+    '[data-framer-name="projects"]', '[name="projects"]', '.framer-zv3l8f-container',
+    '.framer-7bu31p-container',
+    '[data-framer-name="services"]', '[name="services"]', '.framer-1sm19hr-container'
+  ].join(',');
+
+  let toastTimer = 0;
+  let lastShown = 0;
+
+  function removeBadge(){
+    document.querySelectorAll('#__framer-badge-container, .__framer-badge').forEach(el=>{
+      el.style.setProperty('display','none','important');
+      el.style.setProperty('visibility','hidden','important');
+      el.style.setProperty('pointer-events','none','important');
+      el.setAttribute('aria-hidden','true');
+    });
+  }
+
+  function getToast(){
+    let t=document.getElementById('nizar-soon-toast');
+    if(!t){
+      t=document.createElement('div');
+      t.id='nizar-soon-toast';
+      t.textContent='Soon';
+      t.setAttribute('role','status');
+      t.setAttribute('aria-live','polite');
+      document.body.appendChild(t);
+    }
+    return t;
+  }
+
+  function showSoon(){
+    const now=Date.now();
+    if(now-lastShown < 180) return;
+    lastShown=now;
+    const t=getToast();
+    clearTimeout(toastTimer);
+    t.classList.add('nz-show');
+    toastTimer=setTimeout(()=>t.classList.remove('nz-show'),1100);
+  }
+
+  function placeholderFrom(target){
+    const el=target?.closest?.(PLACEHOLDERS);
+    if(!el) return null;
+    // Only act when the match belongs to the bottom DockNav, never similarly-named content elsewhere.
+    return el.closest?.('[data-framer-name="DockNav"]') ? el : null;
+  }
+
+  function blockOldAction(e){
+    const el=placeholderFrom(e.target);
+    if(!el) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+    if(e.type==='pointerup' || e.type==='click') showSoon();
+  }
+
+  // Capture phase prevents Framer's original apps/windows from opening.
+  window.addEventListener('pointerup', blockOldAction, true);
+  window.addEventListener('click', blockOldAction, true);
+  window.addEventListener('auxclick', blockOldAction, true);
+
+  // Keyboard support for the dock placeholders.
+  window.addEventListener('keydown', e=>{
+    if(e.key!=='Enter' && e.key!==' ') return;
+    const el=placeholderFrom(e.target);
+    if(!el) return;
+    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation?.(); showSoon();
+  }, true);
+
+  const mo=new MutationObserver(removeBadge);
+  mo.observe(document.documentElement,{childList:true,subtree:true});
+  removeBadge();
+  setTimeout(removeBadge,400);
+  setTimeout(removeBadge,1600);
+})();
+</script>
 </body></html>
