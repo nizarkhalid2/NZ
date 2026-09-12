@@ -79,22 +79,55 @@
 })();
 </script><script id="nizar-movies-early-blocker">
 (() => {
-  // Keep Framer's native desktop drag behavior, but replace the app's click action.
-  const MOVIES_SELECTOR = '[data-nizar-movies-app="true"], [data-framer-name="Movies"], [name="Movies"], #grmyv7, .framer-grmyv7-container, .framer-1pfipj9-container';
+  // Movies may launch ONLY from the visible Movies icon or its visible label.
+  // Never treat a large Framer wrapper / desktop region as the Movies app.
   let press = null;
+
+  function isMovieImage(img) {
+    if (!(img instanceof HTMLImageElement)) return false;
+    const src = img.getAttribute('src') || '';
+    return /movies-icon\.png|PWuUiO2aouvctH4NNK1MNPe9o|sXPlJD56ya7bPccebTOcaoSqJ48/.test(src);
+  }
+
+  function isMovieLabel(el) {
+    if (!(el instanceof Element)) return false;
+    const t = (el.textContent || '').trim();
+    return t === 'Movies' || t === 'Interstellar';
+  }
+
+  function smallRoot(el) {
+    if (!(el instanceof Element)) return null;
+    let node = el;
+    let best = el;
+    for (let i = 0; node && node !== document.body && i < 9; i++, node = node.parentElement) {
+      if (!(node instanceof HTMLElement)) continue;
+      const r = node.getBoundingClientRect();
+      if (!r.width || !r.height) continue;
+      // Desktop icons are small. Stop before any page-sized Framer wrapper.
+      if (r.width > 190 || r.height > 190) break;
+      best = node;
+      if (node.matches('a,button,[role="button"],[tabindex]')) best = node;
+    }
+    return best instanceof Element ? best : el;
+  }
 
   function movieTarget(node) {
     if (!(node instanceof Element)) return null;
-    const direct = node.closest(MOVIES_SELECTOR);
-    if (direct) return direct;
-    const link = node.closest('a,button,[tabindex],div');
-    if (!link) return null;
-    const label = Array.from(link.querySelectorAll('p,span')).some(el => {
-      const t = (el.textContent || '').trim();
-      return t === 'Movies' || t === 'Interstellar';
-    });
-    const img = link.querySelector('img');
-    if (label || (img && /movies-icon\.png|PWuUiO2aouvctH4NNK1MNPe9o|sXPlJD56ya7bPccebTOcaoSqJ48/.test(img.getAttribute('src') || ''))) return link;
+    if (node.closest('#nizar-movies-window')) return null;
+
+    // A previously marked HOTSPOT is safe only while it stays icon-sized.
+    const hot = node.closest('[data-nizar-movies-hotspot="true"]');
+    if (hot instanceof HTMLElement) {
+      const r = hot.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0 && r.width <= 190 && r.height <= 190) return hot;
+    }
+
+    const img = node.closest('img');
+    if (isMovieImage(img)) return smallRoot(img);
+
+    const text = node.closest('p,span');
+    if (isMovieLabel(text)) return smallRoot(text);
+
     return null;
   }
 
@@ -105,6 +138,7 @@
   }
 
   function launch() {
+    window.__nizarMoviesAuthorizedAt = performance.now();
     let tries = 0;
     const run = () => {
       if (typeof window.__nizarOpenMoviesWindow === 'function') {
@@ -116,7 +150,7 @@
     run();
   }
 
-  // IMPORTANT: do not block pointerdown. Framer needs it to drag the desktop icon.
+  // Keep pointerdown native so Framer drag still works when starting on the icon.
   document.addEventListener('pointerdown', e => {
     const target = movieTarget(e.target);
     if (!target) { press = null; return; }
@@ -125,12 +159,12 @@
 
   document.addEventListener('pointerup', e => {
     if (!press || press.id !== e.pointerId) return;
+    const targetNow = movieTarget(e.target);
     const moved = Math.hypot(e.clientX - press.x, e.clientY - press.y);
     const elapsed = performance.now() - press.at;
-    const wasMovie = !!press.target;
+    const valid = !!targetNow;
     press = null;
-    // A short stationary press is a launch; a moved press is a native Framer drag.
-    if (wasMovie && moved <= 14 && elapsed <= 1500) {
+    if (valid && moved <= 14 && elapsed <= 1500) {
       block(e);
       launch();
     }
@@ -140,19 +174,14 @@
     if (press && press.id === e.pointerId) press = null;
   }, true);
 
-  // Suppress the synthetic click/navigation after both clicks and drags.
-  document.addEventListener('click', e => {
-    if (!movieTarget(e.target)) return;
-    block(e);
-  }, true);
-  document.addEventListener('dblclick', e => {
-    if (!movieTarget(e.target)) return;
-    block(e);
-  }, true);
-  document.addEventListener('auxclick', e => {
-    if (!movieTarget(e.target)) return;
-    block(e);
-  }, true);
+  // Stop Framer's old click only when the user actually clicked the Movies icon/label.
+  for (const type of ['click','dblclick','auxclick']) {
+    document.addEventListener(type, e => {
+      if (!movieTarget(e.target)) return;
+      block(e);
+    }, true);
+  }
+
   document.addEventListener('keydown', e => {
     if ((e.key !== 'Enter' && e.key !== ' ') || !movieTarget(e.target)) return;
     block(e); launch();
@@ -638,16 +667,49 @@ html, body {
   let press = null;
   let drag = null;
 
+  function nizarIsMovieImage(img) {
+    if (!(img instanceof HTMLImageElement)) return false;
+    const src = img.getAttribute('src') || '';
+    return /movies-icon\.png|PWuUiO2aouvctH4NNK1MNPe9o|sXPlJD56ya7bPccebTOcaoSqJ48/.test(src);
+  }
+
+  function nizarIsMovieLabel(el) {
+    if (!(el instanceof Element)) return false;
+    const t = (el.textContent || '').trim();
+    return t === 'Movies' || t === 'Interstellar';
+  }
+
+  function nizarMovieSmallRoot(el) {
+    if (!(el instanceof Element)) return null;
+    let node = el;
+    let best = el;
+    for (let i = 0; node && node !== document.body && i < 9; i++, node = node.parentElement) {
+      if (!(node instanceof HTMLElement)) continue;
+      const r = node.getBoundingClientRect();
+      if (!r.width || !r.height) continue;
+      if (r.width > 190 || r.height > 190) break;
+      best = node;
+      if (node.matches('a,button,[role="button"],[tabindex]')) best = node;
+    }
+    return best instanceof Element ? best : el;
+  }
+
   function isMoviesElement(el) {
     if (!(el instanceof Element)) return null;
-    const direct = el.closest('[data-nizar-movies-app="true"], a[name="Movies"], [data-framer-name="Movies"], #grmyv7, .framer-grmyv7-container, .framer-1pfipj9-container');
-    if (direct) return direct;
-    const link = el.closest('a');
-    if (link) {
-      const img = link.querySelector('img');
-      const label = Array.from(link.querySelectorAll('p,span')).find(n => ['Movies','Interstellar'].includes((n.textContent||'').trim()));
-      if ((img && ((img.getAttribute('src')||'').includes('movies-icon.png'))) || label) return link;
+    if (el.closest('#nizar-movies-window')) return null;
+
+    const hot = el.closest('[data-nizar-movies-hotspot="true"]');
+    if (hot instanceof HTMLElement) {
+      const r = hot.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0 && r.width <= 190 && r.height <= 190) return hot;
     }
+
+    const img = el.closest('img');
+    if (nizarIsMovieImage(img)) return nizarMovieSmallRoot(img);
+
+    const text = el.closest('p,span');
+    if (nizarIsMovieLabel(text)) return nizarMovieSmallRoot(text);
+
     return null;
   }
 
@@ -812,6 +874,9 @@ html, body {
   }
 
   window.__nizarOpenMoviesWindow = function () {
+    const authorizedAt = Number(window.__nizarMoviesAuthorizedAt || 0);
+    if (!authorizedAt || performance.now() - authorizedAt > 1800) return;
+    window.__nizarMoviesAuthorizedAt = 0;
     openMoviesWindow();
     requestAnimationFrame(suppressOriginalFavoritesWindow);
     setTimeout(suppressOriginalFavoritesWindow, 40);
@@ -821,18 +886,27 @@ html, body {
   function markMoviesApp() {
     scheduled = false;
     const candidates = new Set();
-    document.querySelectorAll('[name="Movies"], [data-framer-name="Movies"], #grmyv7, .framer-grmyv7-container, .framer-1pfipj9-container').forEach(el => candidates.add(el));
 
-    document.querySelectorAll('p, span').forEach(el => {
-      const text = (el.textContent || '').trim();
-      if (text === 'Interstellar' || text === 'Movies') {
-        const app = isMoviesElement(el);
-        if (app) candidates.add(app);
+    // Discover ONLY from the actual visible movie icon or its visible label.
+    document.querySelectorAll('img').forEach(img => {
+      if (nizarIsMovieImage(img)) {
+        const root = nizarMovieSmallRoot(img);
+        if (root) candidates.add(root);
+      }
+    });
+    document.querySelectorAll('p,span').forEach(el => {
+      if (nizarIsMovieLabel(el)) {
+        const root = nizarMovieSmallRoot(el);
+        if (root) candidates.add(root);
       }
     });
 
     candidates.forEach(app => {
       if (!(app instanceof HTMLElement)) return;
+      const r = app.getBoundingClientRect();
+      if (!r.width || !r.height || r.width > 190 || r.height > 190) return;
+
+      app.dataset.nizarMoviesHotspot = 'true';
       app.dataset.nizarMoviesApp = 'true';
       app.setAttribute('role', 'button');
       app.setAttribute('aria-label', 'Open Movies');
@@ -840,23 +914,22 @@ html, body {
 
       const links = app.matches('a') ? [app] : Array.from(app.querySelectorAll('a'));
       links.forEach(link => {
-        // Keep Framer's DOM shape but route interaction to the in-desktop window.
         link.setAttribute('href', '#movies');
         link.setAttribute('target', '_self');
-        link.dataset.nizarMoviesApp = 'true';
+        link.dataset.nizarMoviesHotspot = 'true';
       });
 
       app.querySelectorAll('img').forEach(img => {
         const src = img.getAttribute('src') || '';
-        if (src.includes('PWuUiO2aouvctH4NNK1MNPe9o') || src.includes('sXPlJD56ya7bPccebTOcaoSqJ48') || src.includes('movies-icon.png')) {
+        if (/PWuUiO2aouvctH4NNK1MNPe9o|sXPlJD56ya7bPccebTOcaoSqJ48|movies-icon\.png/.test(src)) {
           if (!src.includes('movies-icon.png')) img.setAttribute('src', ICON_URL);
           img.removeAttribute('srcset');
           img.setAttribute('alt', 'Movies');
         }
       });
 
-      app.querySelectorAll('p,span').forEach(p => {
-        if ((p.textContent || '').trim() === 'Interstellar') p.textContent = 'Movies';
+      app.querySelectorAll('p,span').forEach(t => {
+        if ((t.textContent || '').trim() === 'Interstellar') t.textContent = 'Movies';
       });
     });
   }
@@ -882,18 +955,27 @@ html, body {
     const dt = performance.now() - press.t;
     const sameApp = current && (current === press.target || current.closest?.('[data-nizar-movies-app="true"]') === press.target || press.target.contains?.(current));
     press = null;
-    if (sameApp && Math.hypot(dx, dy) <= 14 && dt <= 1200) openMoviesWindow(event);
+    if (sameApp && Math.hypot(dx, dy) <= 14 && dt <= 1200) {
+      window.__nizarMoviesAuthorizedAt = performance.now();
+      openMoviesWindow(event);
+    }
   }, true);
 
   document.addEventListener('pointercancel', () => { press = null; }, true);
 
   document.addEventListener('click', event => {
-    if (isMoviesElement(event.target)) openMoviesWindow(event);
+    if (isMoviesElement(event.target)) {
+      window.__nizarMoviesAuthorizedAt = performance.now();
+      openMoviesWindow(event);
+    }
   }, true);
 
   document.addEventListener('keydown', event => {
     if (event.key !== 'Enter' && event.key !== ' ') return;
-    if (isMoviesElement(event.target)) openMoviesWindow(event);
+    if (isMoviesElement(event.target)) {
+      window.__nizarMoviesAuthorizedAt = performance.now();
+      openMoviesWindow(event);
+    }
   }, true);
 
   // Escape closes the Movies window.
