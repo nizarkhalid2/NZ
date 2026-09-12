@@ -1262,7 +1262,10 @@ html, body {
       if (txt==='About' || txt==='About Me' || txt==='Our Days') {
         const app=t.closest('[data-framer-name="about"], [name="about"], .framer-1hiogi0-container, [data-framer-name="Tips"], [name="Tips"], .framer-12rwxs8-container, a');
         if (app) candidates.add(app);
-        t.textContent='Our Days';
+        // Only mutate when the label actually needs changing. Re-writing
+        // "Our Days" continuously retriggers the MutationObserver and can
+        // lock the page on the Hello/loading screen.
+        if (txt !== 'Our Days') t.textContent='Our Days';
       }
     });
     candidates.forEach(el => {
