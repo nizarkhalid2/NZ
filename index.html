@@ -1748,4 +1748,214 @@ html, body {
   else boot();
 })();
 </script>
+
+
+<!-- NIZAR: final mobile iPhone layout / remove Resume / full-screen Hello -->
+<style id="nizar-mobile-iphone-final">
+  /* Resume is removed everywhere, including the mobile variant/tooltip. */
+  [data-framer-name="Resume"], [name="Resume"], .framer-14iti09-container {
+    display:none !important;
+    visibility:hidden !important;
+    opacity:0 !important;
+    pointer-events:none !important;
+  }
+
+  @media (max-width: 809.98px) {
+    html, body, #main, [data-framer-root] {
+      width:100% !important;
+      min-width:100% !important;
+      max-width:none !important;
+    }
+
+    /* The Hello screen itself must be a completely opaque, full phone viewport.
+       It still uses Framer's original lift/reveal animation. */
+    .framer-wjx6t .framer-1ikkr7l[data-framer-name="Pre-Loader"],
+    .framer-wjx6t .framer-1ikkr7l {
+      position:fixed !important;
+      inset:0 !important;
+      left:0 !important;
+      top:0 !important;
+      width:100vw !important;
+      height:100vh !important;
+      height:100dvh !important;
+      min-height:100vh !important;
+      min-height:100dvh !important;
+      z-index:2147482000 !important;
+      overflow:hidden !important;
+      background-color:#05080d !important;
+      background-image:url("./background.jpg") !important;
+      background-size:cover !important;
+      background-position:center center !important;
+      background-repeat:no-repeat !important;
+    }
+    .framer-wjx6t .framer-1ikkr7l .framer-fkzdvp-container,
+    .framer-wjx6t .framer-1ikkr7l .framer-Z1z3F,
+    .framer-wjx6t .framer-1ikkr7l .framer-w15mnm,
+    .framer-wjx6t .framer-1ikkr7l .framer-1iwxn1k,
+    .framer-wjx6t .framer-1ikkr7l .framer-vpigm {
+      width:100% !important;
+      min-width:100% !important;
+      height:100% !important;
+      min-height:100% !important;
+      left:0 !important;
+    }
+    .framer-wjx6t .framer-1ikkr7l .framer-1iwxn1k,
+    .framer-wjx6t .framer-1ikkr7l .framer-vpigm {
+      background-color:#05080d !important;
+    }
+
+    /* Four home-screen apps in a clean iPhone-style four-column row. */
+    .framer-12rwxs8-container.nz-mobile-home-icon,
+    .framer-grmyv7-container.nz-mobile-home-icon,
+    .framer-1xri14m-container.nz-mobile-home-icon,
+    .framer-1r7utb3-container.nz-mobile-home-icon {
+      position:fixed !important;
+      top:76px !important;
+      bottom:auto !important;
+      right:auto !important;
+      width:25vw !important;
+      height:104px !important;
+      margin:0 !important;
+      transform:none !important;
+      z-index:2 !important;
+      display:flex !important;
+      justify-content:center !important;
+      align-items:flex-start !important;
+      overflow:visible !important;
+    }
+    .framer-12rwxs8-container.nz-mobile-home-icon { left:0 !important; }
+    .framer-grmyv7-container.nz-mobile-home-icon { left:25vw !important; }
+    .framer-1xri14m-container.nz-mobile-home-icon { left:50vw !important; }
+    .framer-1r7utb3-container.nz-mobile-home-icon { left:75vw !important; }
+
+    .nz-mobile-home-icon > a {
+      width:100% !important;
+      height:auto !important;
+      display:flex !important;
+      justify-content:center !important;
+      text-decoration:none !important;
+    }
+    .nz-mobile-home-icon .framer-1tn37ln {
+      width:100% !important;
+      gap:5px !important;
+      align-items:center !important;
+    }
+    .nz-mobile-home-icon .framer-7wcty3 {
+      width:64px !important;
+      height:64px !important;
+      min-width:64px !important;
+      min-height:64px !important;
+    }
+    .nz-mobile-home-icon .framer-1kcvcc0,
+    .nz-mobile-home-icon .framer-aqs7vo {
+      width:100% !important;
+      max-width:100% !important;
+    }
+    .nz-mobile-home-icon .framer-1kcvcc0 p,
+    .nz-mobile-home-icon .framer-aqs7vo p,
+    .nz-mobile-home-icon p.framer-text {
+      width:100% !important;
+      text-align:center !important;
+      font-size:12px !important;
+      line-height:1.15 !important;
+      white-space:normal !important;
+    }
+  }
+</style>
+<script id="nizar-mobile-iphone-final-script">
+(() => {
+  const MOBILE = () => window.matchMedia('(max-width: 809.98px)').matches;
+  const apps = [
+    {sel:'.framer-12rwxs8-container', label:'Our Days'},
+    {sel:'.framer-grmyv7-container', label:'Movies'},
+    {sel:'.framer-1xri14m-container', label:'Music'},
+    {sel:'.framer-1r7utb3-container', label:'Herding cats'}
+  ];
+
+  function visible(el){
+    if(!(el instanceof HTMLElement)) return false;
+    const cs=getComputedStyle(el), r=el.getBoundingClientRect();
+    return cs.display!=='none' && cs.visibility!=='hidden' && r.width>15 && r.height>15;
+  }
+
+  function removeResume(){
+    document.querySelectorAll('[data-framer-name="Resume"], [name="Resume"], .framer-14iti09-container').forEach(el=>{
+      if(el instanceof HTMLElement){
+        el.style.setProperty('display','none','important');
+        el.style.setProperty('visibility','hidden','important');
+        el.style.setProperty('pointer-events','none','important');
+        el.setAttribute('aria-hidden','true');
+      }
+    });
+    // Remove any orphaned Resume pill/tooltip Framer may recreate after hydration.
+    document.querySelectorAll('p,span,div').forEach(el=>{
+      if(!(el instanceof HTMLElement) || el.children.length) return;
+      if((el.textContent||'').trim()!=='Resume') return;
+      let node=el;
+      for(let i=0;i<5 && node.parentElement;i++){
+        const parent=node.parentElement;
+        const r=parent.getBoundingClientRect();
+        if(r.width>0 && r.height>0 && r.width<=180 && r.height<=100) node=parent;
+        else break;
+      }
+      node.style.setProperty('display','none','important');
+      node.setAttribute('aria-hidden','true');
+    });
+  }
+
+  function renameOurDays(){
+    document.querySelectorAll('.framer-12rwxs8-container p, .framer-12rwxs8-container span, [data-framer-name="Tips"] p, [data-framer-name="Tips"] span').forEach(el=>{
+      if(!(el instanceof HTMLElement) || el.children.length) return;
+      const t=(el.textContent||'').trim();
+      if(t==='Tips' || t==='About' || t==='About Me') el.textContent='Our Days';
+    });
+  }
+
+  function layoutMobile(){
+    if(!MOBILE()) return;
+    apps.forEach(item=>{
+      const nodes=Array.from(document.querySelectorAll(item.sel));
+      const root=nodes.find(visible) || nodes[0];
+      if(!(root instanceof HTMLElement)) return;
+      if(root.dataset.nzMobileGridReady==='1') return;
+      root.dataset.nzMobileGridReady='1';
+      root.classList.add('nz-mobile-home-icon');
+      // Clear the old tablet/mobile offset before the grid CSS takes over.
+      root.style.setProperty('top','76px','important');
+      root.style.setProperty('bottom','auto','important');
+      root.style.setProperty('right','auto','important');
+      root.style.setProperty('transform','none','important');
+    });
+    renameOurDays();
+  }
+
+  // Let Framer take over transform again as soon as a real drag starts.
+  document.addEventListener('pointerdown', e=>{
+    if(!MOBILE()) return;
+    const root=e.target?.closest?.('.nz-mobile-home-icon');
+    if(!(root instanceof HTMLElement)) return;
+    // Capture the grid position before removing the layout class.
+    const r=root.getBoundingClientRect();
+    root.classList.remove('nz-mobile-home-icon');
+    root.style.removeProperty('transform');
+    // Keep its current visual point as the drag origin rather than snapping back.
+    root.style.setProperty('position','fixed','important');
+    root.style.setProperty('left',r.left+'px','important');
+    root.style.setProperty('top',r.top+'px','important');
+    root.style.setProperty('right','auto','important');
+    root.style.setProperty('bottom','auto','important');
+  }, true);
+
+  function apply(){ removeResume(); renameOurDays(); layoutMobile(); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',apply,{once:true}); else apply();
+  let queued=false;
+  const mo=new MutationObserver(()=>{
+    if(queued) return; queued=true;
+    requestAnimationFrame(()=>{queued=false; apply();});
+  });
+  mo.observe(document.documentElement,{childList:true,subtree:true,characterData:true});
+  setTimeout(apply,250); setTimeout(apply,900); setTimeout(apply,1800); setTimeout(apply,3200);
+})();
+</script>
+
 </body></html>
