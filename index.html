@@ -1787,6 +1787,11 @@ html, body {
       background-size:cover !important;
       background-position:center center !important;
       background-repeat:no-repeat !important;
+      opacity:1 !important;
+      transform:translate3d(0,0,0) scale(1) !important;
+      transition:opacity .72s cubic-bezier(.22,.61,.36,1), transform .9s cubic-bezier(.22,.61,.36,1), filter .72s ease !important;
+      will-change:opacity,transform,filter !important;
+      backface-visibility:hidden !important;
     }
     /* Do NOT force the boot component's inner mask/content dimensions.
        Framer animates those values to finish the Hello reveal. */
@@ -1795,12 +1800,19 @@ html, body {
       background-color:#05080d !important;
     }
 
-    /* Mobile safety state: once boot finishes, remove the pre-loader completely. */
+    /* Smooth mobile handoff: fade/lift Hello first, then remove it after the
+       desktop apps have eased into place. */
     html.nz-mobile-boot-finished .framer-wjx6t .framer-1ikkr7l[data-framer-name="Pre-Loader"],
     html.nz-mobile-boot-finished .framer-wjx6t .framer-1ikkr7l {
+      opacity:0 !important;
+      transform:translate3d(0,-4.5vh,0) scale(1.012) !important;
+      filter:blur(1.5px) !important;
+      pointer-events:none !important;
+    }
+    html.nz-mobile-boot-removed .framer-wjx6t .framer-1ikkr7l[data-framer-name="Pre-Loader"],
+    html.nz-mobile-boot-removed .framer-wjx6t .framer-1ikkr7l {
       display:none !important;
       visibility:hidden !important;
-      opacity:0 !important;
       pointer-events:none !important;
     }
 
@@ -1859,6 +1871,36 @@ html, body {
       font-size:12px !important;
       line-height:1.15 !important;
       white-space:normal !important;
+    }
+
+    /* iPhone-style reveal after Hello: soft fade + tiny rise/scale, staggered.
+       The animation is applied to the icon's inner content so it never fights
+       Framer's drag transform on the desktop icon container itself. */
+    .nz-mobile-home-icon {
+      opacity:0 !important;
+      transition:opacity .48s ease !important;
+    }
+    .nz-mobile-home-icon > * {
+      transform:translate3d(0,16px,0) scale(.94) !important;
+      transform-origin:50% 40% !important;
+      transition:transform .62s cubic-bezier(.2,.75,.25,1) !important;
+      will-change:transform !important;
+    }
+    html.nz-mobile-apps-visible .nz-mobile-home-icon { opacity:1 !important; }
+    html.nz-mobile-apps-visible .nz-mobile-home-icon > * { transform:translate3d(0,0,0) scale(1) !important; }
+
+    html.nz-mobile-apps-visible .framer-12rwxs8-container.nz-mobile-home-icon { transition-delay:.02s !important; }
+    html.nz-mobile-apps-visible .framer-grmyv7-container.nz-mobile-home-icon { transition-delay:.09s !important; }
+    html.nz-mobile-apps-visible .framer-1xri14m-container.nz-mobile-home-icon { transition-delay:.16s !important; }
+    html.nz-mobile-apps-visible .framer-1r7utb3-container.nz-mobile-home-icon { transition-delay:.23s !important; }
+    html.nz-mobile-apps-visible .framer-12rwxs8-container.nz-mobile-home-icon > * { transition-delay:.02s !important; }
+    html.nz-mobile-apps-visible .framer-grmyv7-container.nz-mobile-home-icon > * { transition-delay:.09s !important; }
+    html.nz-mobile-apps-visible .framer-1xri14m-container.nz-mobile-home-icon > * { transition-delay:.16s !important; }
+    html.nz-mobile-apps-visible .framer-1r7utb3-container.nz-mobile-home-icon > * { transition-delay:.23s !important; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .nz-mobile-home-icon, .nz-mobile-home-icon > *,
+      .framer-wjx6t .framer-1ikkr7l { transition-duration:.01ms !important; transition-delay:0ms !important; }
     }
   }
 </style>
@@ -1963,14 +2005,19 @@ html, body {
     const finishBoot=()=>{
       if(finished) return;
       finished=true;
-      document.documentElement.classList.add('nz-mobile-boot-finished');
+      const html=document.documentElement;
+      // Start Hello's soft fade/lift. Let the apps begin appearing a fraction
+      // later, then physically remove the preloader only after both transitions.
+      html.classList.add('nz-mobile-boot-finished');
+      setTimeout(()=>html.classList.add('nz-mobile-apps-visible'),180);
+      setTimeout(()=>html.classList.add('nz-mobile-boot-removed'),980);
     };
 
     // When Framer switches the Hello component to its exit variant, let that
     // movement play briefly and then reveal the desktop.
     const watchBoot=new MutationObserver(()=>{
       if(document.querySelector('.framer-Z1z3F.framer-v-1kigckf')){
-        setTimeout(finishBoot,1200);
+        setTimeout(finishBoot,650);
         watchBoot.disconnect();
       }
     });
