@@ -1788,20 +1788,20 @@ html, body {
       background-position:center center !important;
       background-repeat:no-repeat !important;
     }
-    .framer-wjx6t .framer-1ikkr7l .framer-fkzdvp-container,
-    .framer-wjx6t .framer-1ikkr7l .framer-Z1z3F,
-    .framer-wjx6t .framer-1ikkr7l .framer-w15mnm,
-    .framer-wjx6t .framer-1ikkr7l .framer-1iwxn1k,
-    .framer-wjx6t .framer-1ikkr7l .framer-vpigm {
-      width:100% !important;
-      min-width:100% !important;
-      height:100% !important;
-      min-height:100% !important;
-      left:0 !important;
-    }
+    /* Do NOT force the boot component's inner mask/content dimensions.
+       Framer animates those values to finish the Hello reveal. */
     .framer-wjx6t .framer-1ikkr7l .framer-1iwxn1k,
     .framer-wjx6t .framer-1ikkr7l .framer-vpigm {
       background-color:#05080d !important;
+    }
+
+    /* Mobile safety state: once boot finishes, remove the pre-loader completely. */
+    html.nz-mobile-boot-finished .framer-wjx6t .framer-1ikkr7l[data-framer-name="Pre-Loader"],
+    html.nz-mobile-boot-finished .framer-wjx6t .framer-1ikkr7l {
+      display:none !important;
+      visibility:hidden !important;
+      opacity:0 !important;
+      pointer-events:none !important;
     }
 
     /* Four home-screen apps in a clean iPhone-style four-column row. */
@@ -1955,6 +1955,31 @@ html, body {
   });
   mo.observe(document.documentElement,{childList:true,subtree:true,characterData:true});
   setTimeout(apply,250); setTimeout(apply,900); setTimeout(apply,1800); setTimeout(apply,3200);
+
+  // Mobile boot watchdog: preserve Framer's original Hello animation, but never
+  // allow the pre-loader to remain stuck on iOS/Safari after it should finish.
+  if(MOBILE()){
+    let finished=false;
+    const finishBoot=()=>{
+      if(finished) return;
+      finished=true;
+      document.documentElement.classList.add('nz-mobile-boot-finished');
+    };
+
+    // When Framer switches the Hello component to its exit variant, let that
+    // movement play briefly and then reveal the desktop.
+    const watchBoot=new MutationObserver(()=>{
+      if(document.querySelector('.framer-Z1z3F.framer-v-1kigckf')){
+        setTimeout(finishBoot,1200);
+        watchBoot.disconnect();
+      }
+    });
+    watchBoot.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style']});
+
+    // Hard fallback for iPhone Safari / slow hydration. This guarantees that
+    // Hello can never trap the user on the boot screen forever.
+    setTimeout(finishBoot,5200);
+  }
 })();
 </script>
 
