@@ -1662,4 +1662,90 @@ html, body {
   setTimeout(applyNZ,500); setTimeout(applyNZ,1800);
 })();
 </script>
+
+
+<!-- NIZAR: requested desktop starting positions + hide social media icons -->
+<style id="nizar-final-layout-patch">
+  /* Remove only the LinkedIn / X / Instagram group in the top bar. */
+  [data-framer-name="Social-links"],
+  .framer-1o4lp7i[data-framer-name="Social-links"] {
+    display:none !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+  }
+</style>
+<script id="nizar-final-layout-script">
+(() => {
+  // Positions copied from the user's approved desktop screenshot.
+  // Values represent the visible icon's top-left as a proportion of the viewport.
+  const TARGETS = [
+    { key:'Music',    selectors:['.framer-1xri14m-container','[data-framer-name="Music"]'], x:.3125,       y:.17569 },
+    { key:'Our Days', selectors:['.framer-12rwxs8-container','[data-framer-name="Tips"]'],  x:.5185546875, y:.21747 },
+    { key:'Movies',   selectors:['.framer-grmyv7-container','[data-framer-name="Movies"]'],x:.3291015625, y:.63343 },
+    { key:'Game',     selectors:['.framer-1r7utb3-container','[data-framer-name="Game"]'],  x:.68701171875,y:.53846 }
+  ];
+
+  function visibleCandidate(selectors){
+    for(const sel of selectors){
+      for(const el of document.querySelectorAll(sel)){
+        if(!(el instanceof HTMLElement)) continue;
+        const cs=getComputedStyle(el), r=el.getBoundingClientRect();
+        if(cs.display==='none' || cs.visibility==='hidden' || r.width<20 || r.height<20) continue;
+        return el;
+      }
+    }
+    return null;
+  }
+
+  function imageBox(root){
+    return root.querySelector('.framer-7wcty3') || root.querySelector('img') || root;
+  }
+
+  function applyOne(item){
+    if(window.innerWidth < 1400) return true; // keep Framer responsive layout on smaller screens
+    const root=visibleCandidate(item.selectors);
+    if(!root) return false;
+    if(root.dataset.nzInitialPositionApplied==='1') return true;
+
+    const icon=imageBox(root);
+    const rr=root.getBoundingClientRect();
+    const ir=icon.getBoundingClientRect();
+    if(ir.width<20 || ir.height<20) return false;
+
+    // Convert the approved screenshot's visible-icon position into a fixed desktop position.
+    const desiredX=window.innerWidth * item.x;
+    const desiredY=window.innerHeight * item.y;
+    const offsetX=ir.left-rr.left;
+    const offsetY=ir.top-rr.top;
+
+    root.style.setProperty('position','fixed','important');
+    root.style.setProperty('left',`${desiredX-offsetX}px`,'important');
+    root.style.setProperty('top',`${desiredY-offsetY}px`,'important');
+    root.style.setProperty('right','auto','important');
+    root.style.setProperty('bottom','auto','important');
+    // Framer's drag system can continue changing transform after this initial placement.
+    root.dataset.nzInitialPositionApplied='1';
+    return true;
+  }
+
+  function applyAll(){
+    let all=true;
+    for(const item of TARGETS) all=applyOne(item) && all;
+    return all;
+  }
+
+  function boot(){
+    applyAll();
+    // Hydration may replace the SSR nodes once. Retry only during initial boot.
+    const started=Date.now();
+    const timer=setInterval(()=>{
+      applyAll();
+      if(Date.now()-started>4200) clearInterval(timer);
+    },250);
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{once:true});
+  else boot();
+})();
+</script>
 </body></html>
