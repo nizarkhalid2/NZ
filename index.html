@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" data-redirect-timezone="1" dir="ltr"><head><script id="nizar-ourdays-early-blocker">
 (() => {
-  // Register before Framer so the original About Me window never receives the press.
+  // Keep Framer's native desktop drag behavior, but replace About Me's click action.
   const SELECTOR = '[data-nizar-ourdays-app="true"], [data-framer-name="about"], [name="about"], .framer-1hiogi0-container, [data-framer-name="Tips"], [name="Tips"], .framer-12rwxs8-container';
   let press = null;
 
@@ -9,13 +9,13 @@
     if (!(node instanceof Element)) return null;
     const direct = node.closest(SELECTOR);
     if (direct) return direct;
-    const link = node.closest('a,button,[tabindex],div');
-    if (!link) return null;
-    const label = Array.from(link.querySelectorAll('p,span')).some(el => {
+    const box = node.closest('a,button,[tabindex],div');
+    if (!box) return null;
+    const label = Array.from(box.querySelectorAll('p,span')).some(el => {
       const t = (el.textContent || '').trim();
       return t === 'Our Days' || t === 'About Me' || t === 'About';
     });
-    return label ? link : null;
+    return label ? box : null;
   }
 
   function block(e) {
@@ -37,52 +37,49 @@
     run();
   }
 
+  // IMPORTANT: do not block pointerdown. Framer needs it to drag the desktop icon.
   document.addEventListener('pointerdown', e => {
     const target = targetFrom(e.target);
     if (!target) { press = null; return; }
     press = { id:e.pointerId, x:e.clientX, y:e.clientY, at:performance.now(), target };
-    block(e);
   }, true);
 
   document.addEventListener('pointerup', e => {
-    const target = targetFrom(e.target);
-    if (!target || !press || press.id !== e.pointerId) return;
+    if (!press || press.id !== e.pointerId) return;
     const moved = Math.hypot(e.clientX - press.x, e.clientY - press.y);
     const elapsed = performance.now() - press.at;
+    const wasOurDays = !!press.target;
     press = null;
-    block(e);
-    if (moved <= 16 && elapsed <= 1500) launch();
+    if (wasOurDays && moved <= 14 && elapsed <= 1500) {
+      block(e);
+      launch();
+    }
   }, true);
 
   document.addEventListener('pointercancel', e => {
-    if (press && press.id === e.pointerId && targetFrom(e.target)) block(e);
-    press = null;
+    if (press && press.id === e.pointerId) press = null;
   }, true);
 
   document.addEventListener('click', e => {
     if (!targetFrom(e.target)) return;
     block(e);
   }, true);
-
   document.addEventListener('dblclick', e => {
     if (!targetFrom(e.target)) return;
     block(e);
   }, true);
-
   document.addEventListener('auxclick', e => {
     if (!targetFrom(e.target)) return;
     block(e);
   }, true);
-
   document.addEventListener('keydown', e => {
     if ((e.key !== 'Enter' && e.key !== ' ') || !targetFrom(e.target)) return;
-    block(e);
-    launch();
+    block(e); launch();
   }, true);
 })();
 </script><script id="nizar-movies-early-blocker">
 (() => {
-  // Register before Framer so the original Movies/My Favorites action never receives the press.
+  // Keep Framer's native desktop drag behavior, but replace the app's click action.
   const MOVIES_SELECTOR = '[data-nizar-movies-app="true"], [data-framer-name="Movies"], [name="Movies"], #grmyv7, .framer-grmyv7-container, .framer-1pfipj9-container';
   let press = null;
 
@@ -90,7 +87,7 @@
     if (!(node instanceof Element)) return null;
     const direct = node.closest(MOVIES_SELECTOR);
     if (direct) return direct;
-    const link = node.closest('a');
+    const link = node.closest('a,button,[tabindex],div');
     if (!link) return null;
     const label = Array.from(link.querySelectorAll('p,span')).some(el => {
       const t = (el.textContent || '').trim();
@@ -119,43 +116,46 @@
     run();
   }
 
+  // IMPORTANT: do not block pointerdown. Framer needs it to drag the desktop icon.
   document.addEventListener('pointerdown', e => {
     const target = movieTarget(e.target);
     if (!target) { press = null; return; }
-    press = { id: e.pointerId, x: e.clientX, y: e.clientY, at: performance.now(), target };
-    block(e);
+    press = { id:e.pointerId, x:e.clientX, y:e.clientY, at:performance.now(), target };
   }, true);
 
   document.addEventListener('pointerup', e => {
-    const target = movieTarget(e.target);
-    if (!target || !press || press.id !== e.pointerId) return;
+    if (!press || press.id !== e.pointerId) return;
     const moved = Math.hypot(e.clientX - press.x, e.clientY - press.y);
     const elapsed = performance.now() - press.at;
+    const wasMovie = !!press.target;
     press = null;
-    block(e);
-    if (moved <= 16 && elapsed <= 1500) launch();
+    // A short stationary press is a launch; a moved press is a native Framer drag.
+    if (wasMovie && moved <= 14 && elapsed <= 1500) {
+      block(e);
+      launch();
+    }
   }, true);
 
   document.addEventListener('pointercancel', e => {
-    if (press && press.id === e.pointerId && movieTarget(e.target)) block(e);
-    press = null;
+    if (press && press.id === e.pointerId) press = null;
   }, true);
 
-  // Block the synthetic click/anchor navigation that browsers emit after pointer events.
+  // Suppress the synthetic click/navigation after both clicks and drags.
   document.addEventListener('click', e => {
     if (!movieTarget(e.target)) return;
     block(e);
   }, true);
-
   document.addEventListener('dblclick', e => {
     if (!movieTarget(e.target)) return;
     block(e);
   }, true);
-
+  document.addEventListener('auxclick', e => {
+    if (!movieTarget(e.target)) return;
+    block(e);
+  }, true);
   document.addEventListener('keydown', e => {
     if ((e.key !== 'Enter' && e.key !== ' ') || !movieTarget(e.target)) return;
-    block(e);
-    launch();
+    block(e); launch();
   }, true);
 })();
 </script><script>(function () {
@@ -1376,6 +1376,65 @@ html, body {
   setTimeout(suppressOriginalAboutWindow,2400);
   setInterval(updateStats, 60000);
   if (window.__nizarOurDaysPending) { window.__nizarOurDaysPending=false; openWindow(); }
+})();
+</script>
+
+
+<!-- NIZAR: remove unused desktop apps -->
+<style id="nizar-removed-apps-style">
+  .nizar-removed-desktop-app { display:none !important; visibility:hidden !important; pointer-events:none !important; }
+  #plinq-project-1h5pmyl, #sorae-project-ygavp9, #laver-project-1invank,
+  #nuvio-project-cwolws, #veyra-project-q0hz5e { display:none !important; visibility:hidden !important; pointer-events:none !important; }
+</style>
+<script id="nizar-remove-unused-apps">
+(() => {
+  const REMOVED = new Set(['Framer','Figma','Plinq','Sorae','Laver','Atria','Atriq','Nuvio','Veyra','Resume','Resources']);
+
+  function findAppRoot(label) {
+    if (!(label instanceof Element)) return null;
+    // Portfolio/CMS project icons have stable project wrappers.
+    const project = label.closest('[id*="-project-"]');
+    if (project) return project;
+
+    let node = label;
+    for (let i=0; node && node !== document.body && i<10; i++, node=node.parentElement) {
+      if (!(node instanceof HTMLElement)) continue;
+      const name = (node.getAttribute('data-framer-name') || '').trim();
+      const inline = node.getAttribute('style') || '';
+      if (REMOVED.has(name)) return node;
+      if (/touch-action\s*:\s*none/i.test(inline) && /user-select\s*:\s*none/i.test(inline)) return node;
+    }
+
+    const anchor = label.closest('a');
+    return anchor ? (anchor.parentElement || anchor) : null;
+  }
+
+  function removeUnusedApps() {
+    document.querySelectorAll('p,span').forEach(label => {
+      const text = (label.textContent || '').trim();
+      if (!REMOVED.has(text)) return;
+      const root = findAppRoot(label);
+      if (!root || root.closest('#nizar-movies-window,#nizar-ourdays-window,#nizar-mail-window')) return;
+      if (root.dataset.nizarRemovedDesktopApp === '1') return;
+      root.dataset.nizarRemovedDesktopApp = '1';
+      root.classList.add('nizar-removed-desktop-app');
+      root.setAttribute('aria-hidden','true');
+    });
+  }
+
+  let queued = false;
+  function schedule() {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => { queued=false; removeUnusedApps(); });
+  }
+
+  const observer = new MutationObserver(schedule);
+  observer.observe(document.documentElement, {childList:true, subtree:true});
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', schedule, {once:true});
+  schedule();
+  setTimeout(schedule, 300);
+  setTimeout(schedule, 1200);
 })();
 </script>
 

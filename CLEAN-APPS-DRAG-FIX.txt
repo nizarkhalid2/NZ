@@ -1,0 +1,2 @@
+Removed desktop apps: Framer, Figma, Plinq, Sorae, Laver, Atria, Nuvio, Veyra, Resume, Resources.
+Movies and Our Days keep Framer native icon dragging; short click opens the custom app.
