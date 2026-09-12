@@ -1,0 +1,1 @@
+Fixed Our Days so the original Framer About Me window is blocked and suppressed. Only the custom Our Days window should open.

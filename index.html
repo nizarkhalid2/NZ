@@ -1,42 +1,83 @@
 <!DOCTYPE html>
 <html lang="en" data-redirect-timezone="1" dir="ltr"><head><script id="nizar-ourdays-early-blocker">
 (() => {
+  // Register before Framer so the original About Me window never receives the press.
   const SELECTOR = '[data-nizar-ourdays-app="true"], [data-framer-name="about"], [name="about"], .framer-1hiogi0-container, [data-framer-name="Tips"], [name="Tips"], .framer-12rwxs8-container';
-  let down = null;
+  let press = null;
 
   function targetFrom(node) {
     if (!(node instanceof Element)) return null;
     const direct = node.closest(SELECTOR);
     if (direct) return direct;
-    const item = node.closest('a,button,[tabindex],div');
-    if (!item) return null;
-    const text = (item.textContent || '').trim();
-    if (text === 'Our Days' || text === 'About Me' || text === 'About') return item;
-    return null;
+    const link = node.closest('a,button,[tabindex],div');
+    if (!link) return null;
+    const label = Array.from(link.querySelectorAll('p,span')).some(el => {
+      const t = (el.textContent || '').trim();
+      return t === 'Our Days' || t === 'About Me' || t === 'About';
+    });
+    return label ? link : null;
   }
 
-  document.addEventListener('pointerdown', (e) => {
-    const target = targetFrom(e.target);
-    if (!target) return;
-    down = { x:e.clientX, y:e.clientY, target };
-  }, true);
-
-  document.addEventListener('click', (e) => {
-    const target = targetFrom(e.target);
-    if (!target) return;
+  function block(e) {
     e.preventDefault();
     e.stopPropagation();
-    e.stopImmediatePropagation();
-    const moved = down ? Math.hypot(e.clientX-down.x, e.clientY-down.y) : 0;
-    down = null;
-    if (moved > 10) return;
-    if (typeof window.__nizarOpenOurDaysWindow === 'function') window.__nizarOpenOurDaysWindow();
-    else window.__nizarOurDaysPending = true;
+    if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+  }
+
+  function launch() {
+    let tries = 0;
+    const run = () => {
+      if (typeof window.__nizarOpenOurDaysWindow === 'function') {
+        window.__nizarOpenOurDaysWindow();
+        return;
+      }
+      window.__nizarOurDaysPending = true;
+      if (++tries < 30) setTimeout(run, 50);
+    };
+    run();
+  }
+
+  document.addEventListener('pointerdown', e => {
+    const target = targetFrom(e.target);
+    if (!target) { press = null; return; }
+    press = { id:e.pointerId, x:e.clientX, y:e.clientY, at:performance.now(), target };
+    block(e);
   }, true);
 
-  document.addEventListener('auxclick', (e) => {
+  document.addEventListener('pointerup', e => {
+    const target = targetFrom(e.target);
+    if (!target || !press || press.id !== e.pointerId) return;
+    const moved = Math.hypot(e.clientX - press.x, e.clientY - press.y);
+    const elapsed = performance.now() - press.at;
+    press = null;
+    block(e);
+    if (moved <= 16 && elapsed <= 1500) launch();
+  }, true);
+
+  document.addEventListener('pointercancel', e => {
+    if (press && press.id === e.pointerId && targetFrom(e.target)) block(e);
+    press = null;
+  }, true);
+
+  document.addEventListener('click', e => {
     if (!targetFrom(e.target)) return;
-    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+    block(e);
+  }, true);
+
+  document.addEventListener('dblclick', e => {
+    if (!targetFrom(e.target)) return;
+    block(e);
+  }, true);
+
+  document.addEventListener('auxclick', e => {
+    if (!targetFrom(e.target)) return;
+    block(e);
+  }, true);
+
+  document.addEventListener('keydown', e => {
+    if ((e.key !== 'Enter' && e.key !== ' ') || !targetFrom(e.target)) return;
+    block(e);
+    launch();
   }, true);
 })();
 </script><script id="nizar-movies-early-blocker">
@@ -1226,7 +1267,52 @@ html, body {
     return win;
   }
 
+  function suppressOriginalAboutWindow() {
+    // Safety net: if Framer still creates its original About Me portfolio window,
+    // hide only that legacy OS window and keep the custom Our Days window.
+    const custom = document.getElementById('nizar-ourdays-window');
+
+    // Best path: Framer mounts app windows inside the #overlay portal.
+    const overlay = document.getElementById('overlay');
+    if (overlay) {
+      Array.from(overlay.children).forEach(child => {
+        if (!(child instanceof HTMLElement) || child === custom || child.contains(custom)) return;
+        const txt = (child.innerText || child.textContent || '').replace(/\\s+/g,' ').trim();
+        if (/About Me/i.test(txt) && /Services/i.test(txt) && /Projects/i.test(txt)) {
+          child.style.setProperty('display','none','important');
+          child.style.setProperty('pointer-events','none','important');
+          child.setAttribute('aria-hidden','true');
+          child.setAttribute('data-nizar-suppressed-about','true');
+        }
+      });
+    }
+
+    // Fallback for hydrated variants where the portal structure/names differ.
+    document.querySelectorAll('h1,h2,h3,p,span,div').forEach(el => {
+      if (!(el instanceof HTMLElement) || el.closest('#nizar-ourdays-window')) return;
+      if ((el.textContent || '').trim() !== 'About Me') return;
+      let node = el;
+      let candidate = null;
+      for (let i=0; node && node !== document.body && i<14; i++, node=node.parentElement) {
+        if (!(node instanceof HTMLElement)) continue;
+        const txt=(node.innerText || node.textContent || '').replace(/\\s+/g,' ');
+        if (!/Services/i.test(txt) || !/Projects/i.test(txt)) continue;
+        const style=getComputedStyle(node), rect=node.getBoundingClientRect();
+        if ((style.position==='fixed' || style.position==='absolute') && rect.width>420 && rect.height>260) {
+          candidate=node;
+        }
+      }
+      if (candidate) {
+        candidate.style.setProperty('display','none','important');
+        candidate.style.setProperty('pointer-events','none','important');
+        candidate.setAttribute('aria-hidden','true');
+        candidate.setAttribute('data-nizar-suppressed-about','true');
+      }
+    });
+  }
+
   function openWindow() {
+    suppressOriginalAboutWindow();
     const win = buildWindow();
     win.classList.remove('nizar-minimized');
     updateStats();
@@ -1275,10 +1361,19 @@ html, body {
     });
   }
 
-  const observer = new MutationObserver(markApps);
+  let suppressQueued = false;
+  const observer = new MutationObserver(() => {
+    markApps();
+    if (!suppressQueued) {
+      suppressQueued = true;
+      requestAnimationFrame(() => { suppressQueued = false; suppressOriginalAboutWindow(); });
+    }
+  });
   observer.observe(document.documentElement,{childList:true,subtree:true});
   if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', markApps, {once:true}); else markApps();
-  setTimeout(markApps,400); setTimeout(markApps,1400);
+  setTimeout(() => { markApps(); suppressOriginalAboutWindow(); },400);
+  setTimeout(() => { markApps(); suppressOriginalAboutWindow(); },1400);
+  setTimeout(suppressOriginalAboutWindow,2400);
   setInterval(updateStats, 60000);
   if (window.__nizarOurDaysPending) { window.__nizarOurDaysPending=false; openWindow(); }
 })();
