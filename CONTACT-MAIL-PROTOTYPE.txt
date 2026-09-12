@@ -1,0 +1,9 @@
+Contact Mail prototype
+
+- Contact now opens as a mailbox window.
+- Enter a personal code to open that inbox.
+- New Message sends a one-way message to another code.
+- Reading a message has no Reply button.
+- Switch Mailbox Code lets you test sender/recipient flows in the same browser.
+- Messages are currently stored in localStorage for UI testing only.
+- Cross-device / real-user delivery will be connected later with the backend (Supabase or equivalent).

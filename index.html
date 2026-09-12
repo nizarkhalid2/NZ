@@ -832,20 +832,156 @@ html, body {
 })();
 </script>
 <script id="nz-contact-mail-final">(()=>{
-const MSG_KEY="nzContactMessagesFinal", USER_KEY="nzContactUserFinal";
-const USERS={"123":"NZ","456":"Masen"};
-const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
-const messages=()=>{try{return JSON.parse(localStorage.getItem(MSG_KEY)||"[]")}catch{return[]}};
-const save=a=>localStorage.setItem(MSG_KEY,JSON.stringify(a));
-function hideOld(){document.querySelectorAll('[data-framer-name="contact"], [name="contact"], .framer-ssfp21-container').forEach(el=>{if(!el.closest('#nz-contact-mail-final'))el.setAttribute('data-nz-contact-trigger','1')});document.querySelectorAll('body *').forEach(el=>{if(el.id==='nz-contact-mail-final')return;const t=(el.innerText||'').trim();if(t.length>20&&/Get In Touch:/i.test(t)&&/Product Designer/i.test(t)&&/Enter your message/i.test(t)&&/Submit/i.test(t)){el.style.display='none'}})}
-new MutationObserver(hideOld).observe(document.body,{childList:true,subtree:true});
-const css=document.createElement('style');css.textContent=`#nz-contact-mail-final{position:fixed;inset:0;z-index:2147483647;font-family:Inter,Arial,sans-serif}.ncm-back{position:absolute;inset:0;background:rgba(7,10,14,.28);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;padding:20px}.ncm-card{width:min(540px,94vw);height:min(690px,88vh);background:#f7f7f5;color:#171717;border:1px solid rgba(255,255,255,.75);border-radius:22px;box-shadow:0 28px 90px rgba(0,0,0,.28);overflow:hidden;display:flex;flex-direction:column}.ncm-head{height:78px;padding:17px 20px;display:flex;align-items:center;justify-content:space-between;background:#fafaf8;border-bottom:1px solid #dededb}.ncm-head b{font-size:21px;letter-spacing:-.03em}.ncm-head small{display:block;color:#888;font-size:11px;margin-top:4px}.ncm-close{width:32px;height:32px;border-radius:50%;border:1px solid #ddd;background:#fff;font-size:19px;cursor:pointer}.ncm-bar{height:54px;display:flex;align-items:center;justify-content:space-between;padding:8px 16px 8px 20px;background:#f0f0ed;border-bottom:1px solid #ddd;font-size:12px;font-weight:650}.ncm-new{border:1px solid #1c1c1c;background:#1c1c1c;color:#fff;border-radius:999px;padding:8px 14px;font-size:11px;cursor:pointer}.ncm-list{flex:1;overflow:auto;padding:12px}.ncm-letter{width:100%;display:flex;align-items:center;gap:13px;border:1px solid #e0e0dc;background:#fff;border-radius:14px;margin-bottom:8px;padding:14px;text-align:left;cursor:pointer}.ncm-letter:hover{box-shadow:0 6px 20px #0000000c}.ncm-env{width:40px;height:40px;border-radius:12px;background:#f0f0ed;display:grid;place-items:center;font-size:19px;flex:none}.ncm-info{min-width:0;flex:1}.ncm-info strong,.ncm-info small,.ncm-info span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ncm-info strong{font-size:13px}.ncm-info small{font-size:10px;color:#888;margin:4px 0}.ncm-info span{font-size:12px;color:#666}.ncm-arrow{font-size:20px;color:#aaa}.ncm-empty{height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;color:#777}.ncm-empty-icon{width:62px;height:62px;border-radius:18px;border:1px solid #ddd;background:#fff;display:grid;place-items:center;font-size:27px;margin-bottom:14px}.ncm-empty strong{font-size:14px;color:#444}.ncm-empty span{font-size:11px;color:#999;margin:6px 0 16px}.ncm-read{padding:18px}.ncm-backbtn{border:0;background:none;padding:2px 0 20px;font-size:12px;font-weight:650;cursor:pointer}.ncm-read-meta{display:flex;gap:12px;align-items:center;border-bottom:1px solid #ddd;padding-bottom:16px}.ncm-read-meta strong,.ncm-read-meta small{display:block}.ncm-read-meta strong{font-size:14px}.ncm-read-meta small{font-size:10px;color:#888;margin-top:4px}.ncm-body{margin-top:18px;background:#fff;border:1px solid #ddd;border-radius:15px;padding:20px;font-size:14px;line-height:1.65;min-height:170px}.ncm-compose{padding:18px;display:flex;flex-direction:column;height:100%}.ncm-compose-back{border:0;background:none;text-align:left;padding:0 0 18px;font-size:12px;font-weight:650;cursor:pointer}.ncm-label{font-size:11px;color:#777;margin:9px 0 6px}.ncm-recipient,.ncm-text{width:100%;border:1px solid #d8d8d4;background:#fff;border-radius:12px;padding:12px;font:inherit;font-size:13px;outline:none}.ncm-text{resize:none;min-height:190px;flex:1}.ncm-recipient:focus,.ncm-text:focus{border-color:#999}.ncm-send{margin-top:12px;width:100%;height:42px;border:0;border-radius:12px;background:#191919;color:#fff;font-size:12px;font-weight:650;cursor:pointer}.ncm-note{font-size:10px;color:#999;margin-top:7px}@media(max-width:600px){.ncm-card{height:92vh;border-radius:17px}}`;document.head.appendChild(css);
-let root,list,currentNumber,currentName;
-function close(){document.getElementById('nz-contact-mail-final')?.remove()}
-function renderInbox(){const a=messages().filter(m=>String(m.to)===String(currentNumber)).sort((x,y)=>new Date(y.time)-new Date(x.time));if(!a.length){list.innerHTML=`<div class="ncm-empty"><div class="ncm-empty-icon">✉</div><strong>Your inbox is empty</strong><span>New messages from the other person will appear here.</span><button class="ncm-new">＋ New message</button></div>`;list.querySelector('.ncm-new').onclick=renderCompose;return}list.innerHTML=a.map((m)=>{const d=new Date(m.time);return`<button class="ncm-letter" data-id="${esc(m.id)}"><span class="ncm-env">✉</span><span class="ncm-info"><strong>From ${esc(USERS[m.from]||m.from)}</strong><small>${esc(d.toLocaleDateString([], {year:'numeric',month:'long',day:'numeric'}))} · ${esc(d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}))}</small><span>${esc(m.text.slice(0,90))}</span></span><span class="ncm-arrow">›</span></button>`}).join('');list.querySelectorAll('.ncm-letter').forEach(b=>b.onclick=()=>{const m=messages().find(x=>x.id===b.dataset.id);if(m)renderRead(m)});}
-function renderRead(m){const d=new Date(m.time);list.innerHTML=`<div class="ncm-read"><button class="ncm-backbtn">← Inbox</button><div class="ncm-read-meta"><span class="ncm-env">✉</span><div><strong>From ${esc(USERS[m.from]||m.from)}</strong><small>${esc(d.toLocaleDateString([], {weekday:'long',year:'numeric',month:'long',day:'numeric'}))} · ${esc(d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}))}</small></div></div><article class="ncm-body">${esc(m.text).replace(/\n/g,'<br>')}</article></div>`;list.querySelector('.ncm-backbtn').onclick=renderInbox}
-function renderCompose(){list.innerHTML=`<div class="ncm-compose"><button class="ncm-compose-back">← Inbox</button><div style="font-size:19px;font-weight:650;letter-spacing:-.02em">New message</div><div class="ncm-label">To</div><input class="ncm-recipient" inputmode="numeric" placeholder="Enter person's number"><div class="ncm-label">Message</div><textarea class="ncm-text" placeholder="Write your message..."></textarea><button class="ncm-send">Send message</button><div class="ncm-note">The message will appear in the recipient's inbox.</div></div>`;list.querySelector('.ncm-compose-back').onclick=renderInbox;list.querySelector('.ncm-send').onclick=()=>{const to=list.querySelector('.ncm-recipient').value.trim(),text=list.querySelector('.ncm-text').value.trim();if(!to||!text){alert('Enter the recipient number and message.');return}const a=messages();a.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2),from:String(currentNumber),to,text,time:new Date().toISOString()});save(a);renderInbox()};list.querySelector('.ncm-text').focus()}
-function open(){if(document.getElementById('nz-contact-mail-final'))return;const n=prompt('Enter your number:',localStorage.getItem(USER_KEY)||'');if(n===null)return;currentNumber=n.trim();if(!currentNumber)return;localStorage.setItem(USER_KEY,currentNumber);currentName=USERS[currentNumber]||prompt('Enter your name:')||'User';const w=document.createElement('div');w.id='nz-contact-mail-final';w.innerHTML=`<div class="ncm-back"><section class="ncm-card"><header class="ncm-head"><div><b>Messages</b><small>${esc(currentName)} · ${esc(currentNumber)}</small></div><button class="ncm-close">×</button></header><div class="ncm-bar"><span>Inbox</span><button class="ncm-new">＋ New message</button></div><main class="ncm-list"></main></section></div>`;document.body.appendChild(w);root=w;list=w.querySelector('.ncm-list');w.querySelector('.ncm-close').onclick=close;w.querySelector('.ncm-new').onclick=renderCompose;renderInbox()}
-function trigger(e){if(e.target.closest?.('#nz-contact-mail-final'))return;const el=e.target.closest?.('[data-nz-contact-trigger], [data-framer-name="contact"], [name="contact"], .framer-ssfp21-container');if(!el)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation?.();open()}
-window.addEventListener('pointerdown',trigger,true);window.addEventListener('click',trigger,true);window.addEventListener('auxclick',trigger,true);window.addEventListener('keydown',e=>{if(e.key==='Escape')close()});hideOld();
-})();</script></body></html>
+  const MSG_KEY = "nzMailboxMessagesLocalV2";
+  const USER_KEY = "nzMailboxCodeV2";
+  const APP_ID = "nz-mailbox-window";
+  const CONTACT_SELECTORS = '[data-framer-name="contact"], [name="contact"], .framer-ssfp21-container';
+
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+  const normalizeCode = (s) => String(s || "").trim().toUpperCase().replace(/\s+/g, "").slice(0, 24);
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
+  const loadMessages = () => { try { return JSON.parse(localStorage.getItem(MSG_KEY) || "[]"); } catch { return []; } };
+  const saveMessages = (items) => localStorage.setItem(MSG_KEY, JSON.stringify(items));
+
+  const style = document.createElement("style");
+  style.id = "nz-mailbox-style";
+  style.textContent = `
+  #${APP_ID}{position:fixed;z-index:2147483000;left:50%;top:50%;width:min(850px,86vw);height:min(650px,78vh);transform:translate(-50%,-50%);font-family:Inter,Arial,sans-serif;color:#171717;background:#f7f7f5;border:1px solid rgba(255,255,255,.72);border-radius:18px;box-shadow:0 28px 90px rgba(0,0,0,.34);overflow:hidden;display:flex;flex-direction:column;animation:nzMailIn .2s ease-out}
+  #${APP_ID}.nz-mail-max{inset:30px 22px 22px 22px!important;left:auto!important;top:auto!important;width:auto!important;height:auto!important;transform:none!important}
+  #${APP_ID}.nz-mail-min{height:38px!important;width:min(430px,70vw)!important;top:auto!important;bottom:22px!important;left:50%!important;transform:translateX(-50%)!important}
+  #${APP_ID}.nz-mail-min .nz-mail-body{display:none!important}
+  @keyframes nzMailIn{from{opacity:0;transform:translate(-50%,-47%) scale(.985)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+  .nz-mail-titlebar{height:38px;flex:none;display:flex;align-items:center;position:relative;padding:0 12px;background:rgba(250,250,248,.98);border-bottom:1px solid #dededb;user-select:none;cursor:default}
+  .nz-mail-controls{display:flex;align-items:center;gap:6px;z-index:2}.nz-mail-ctrl{width:10px;height:10px;border:0;padding:0;cursor:pointer}.nz-mail-close{border-radius:50%;background:#111}.nz-mail-minimize{background:#777;border-radius:2px}.nz-mail-maximize{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:10px solid #aaa;background:transparent}
+  .nz-mail-window-title{position:absolute;left:50%;transform:translateX(-50%);font-size:10px;color:#777;font-weight:600}.nz-mail-body{flex:1;min-height:0;background:#f5f5f2;display:flex}
+  .nz-mail-sidebar{width:205px;flex:none;background:#eeeeea;border-right:1px solid #dbdbd6;padding:16px 12px;display:flex;flex-direction:column}.nz-mail-brand{padding:2px 8px 16px}.nz-mail-brand strong{display:block;font-size:18px;letter-spacing:-.03em}.nz-mail-brand small{font-size:10px;color:#888}.nz-mail-codebox{background:#fff;border:1px solid #d9d9d4;border-radius:12px;padding:10px;margin:0 4px 14px}.nz-mail-codebox span{display:block;color:#999;font-size:9px;text-transform:uppercase;letter-spacing:.08em}.nz-mail-codebox b{display:block;font-size:13px;margin-top:4px;word-break:break-all}.nz-mail-nav{border:0;background:transparent;text-align:left;border-radius:9px;padding:9px 10px;font-size:12px;cursor:pointer;color:#333}.nz-mail-nav.active{background:#fff;font-weight:650;box-shadow:0 1px 5px rgba(0,0,0,.05)}.nz-mail-switch{margin-top:auto;border:1px solid #d2d2cd;background:#f9f9f7;border-radius:10px;padding:9px;font-size:10px;cursor:pointer}
+  .nz-mail-main{flex:1;min-width:0;display:flex;flex-direction:column}.nz-mail-toolbar{height:57px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid #ddd;background:#fafaf8}.nz-mail-toolbar strong{font-size:15px}.nz-mail-compose-btn{border:0;border-radius:10px;background:#171717;color:white;padding:9px 13px;font-size:11px;font-weight:650;cursor:pointer}.nz-mail-content{flex:1;min-height:0;overflow:auto;padding:14px}
+  .nz-mail-login{margin:auto;width:min(430px,85%);align-self:center;text-align:center}.nz-mail-login-icon{width:70px;height:70px;border-radius:19px;background:#fff;border:1px solid #ddd;display:grid;place-items:center;margin:0 auto 16px;font-size:31px;box-shadow:0 6px 22px rgba(0,0,0,.05)}.nz-mail-login h2{font-size:22px;margin:0 0 6px;letter-spacing:-.03em}.nz-mail-login p{font-size:11px;color:#888;line-height:1.5;margin:0 auto 18px;max-width:320px}.nz-mail-code-input{width:100%;height:44px;box-sizing:border-box;border:1px solid #d4d4d0;background:white;border-radius:12px;padding:0 13px;font:600 13px Inter,Arial;outline:none;text-align:center;letter-spacing:.08em;text-transform:uppercase}.nz-mail-code-input:focus{border-color:#8e8e89}.nz-mail-open-btn{width:100%;height:43px;margin-top:10px;border:0;border-radius:12px;background:#171717;color:#fff;font:650 12px Inter;cursor:pointer}.nz-mail-login-note{display:block;font-size:9px;color:#aaa;margin-top:10px}
+  .nz-mail-empty{height:100%;min-height:320px;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;color:#888}.nz-mail-empty i{width:58px;height:58px;border-radius:16px;border:1px solid #ddd;background:white;display:grid;place-items:center;font-style:normal;font-size:26px;margin-bottom:12px}.nz-mail-empty strong{font-size:13px;color:#555}.nz-mail-empty span{font-size:10px;margin-top:5px}
+  .nz-mail-row{width:100%;box-sizing:border-box;border:1px solid #deded9;background:#fff;border-radius:12px;margin-bottom:8px;padding:12px 13px;display:flex;gap:11px;align-items:center;text-align:left;cursor:pointer}.nz-mail-row:hover{box-shadow:0 5px 18px rgba(0,0,0,.04)}.nz-mail-envelope{width:38px;height:38px;border-radius:11px;background:#efefec;display:grid;place-items:center;font-size:17px;flex:none}.nz-mail-row-text{min-width:0;flex:1}.nz-mail-row-text b,.nz-mail-row-text span,.nz-mail-row-text small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.nz-mail-row-text b{font-size:12px}.nz-mail-row-text span{font-size:11px;color:#555;margin-top:3px}.nz-mail-row-text small{font-size:9px;color:#999;margin-top:4px}.nz-mail-chevron{font-size:18px;color:#aaa}
+  .nz-mail-view{padding:8px 7px}.nz-mail-back{border:0;background:transparent;padding:4px 0 14px;font:650 11px Inter;cursor:pointer}.nz-mail-meta{background:#fff;border:1px solid #ddd;border-radius:13px;padding:13px;display:flex;gap:11px;align-items:center}.nz-mail-meta div{min-width:0}.nz-mail-meta b,.nz-mail-meta span{display:block}.nz-mail-meta b{font-size:12px}.nz-mail-meta span{font-size:9px;color:#999;margin-top:3px}.nz-mail-subject{font-size:20px;font-weight:700;letter-spacing:-.03em;margin:19px 3px 12px}.nz-mail-message{background:#fff;border:1px solid #ddd;border-radius:14px;padding:18px;min-height:165px;font-size:13px;line-height:1.65;white-space:normal;overflow-wrap:anywhere}.nz-mail-noreply{font-size:9px;color:#aaa;margin:9px 4px}.nz-mail-compose{padding:5px;max-width:620px}.nz-mail-compose h2{font-size:19px;margin:0 0 13px}.nz-mail-label{font-size:10px;color:#777;margin:9px 2px 5px}.nz-mail-input,.nz-mail-textarea{width:100%;box-sizing:border-box;border:1px solid #d5d5d0;background:#fff;border-radius:11px;padding:11px 12px;font:12px Inter;outline:none}.nz-mail-input:focus,.nz-mail-textarea:focus{border-color:#8c8c87}.nz-mail-textarea{height:185px;resize:none;line-height:1.5}.nz-mail-send{width:100%;height:42px;border:0;border-radius:11px;background:#171717;color:#fff;font:650 11px Inter;cursor:pointer;margin-top:11px}.nz-mail-status{height:18px;font-size:10px;margin-top:7px;color:#777}.nz-mail-toast{position:absolute;right:18px;bottom:18px;background:#171717;color:#fff;border-radius:10px;padding:9px 12px;font-size:10px;box-shadow:0 8px 30px rgba(0,0,0,.18);animation:nzToast .2s ease-out}@keyframes nzToast{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+  @media(max-width:650px){#${APP_ID}{width:94vw;height:82vh}.nz-mail-sidebar{width:145px}.nz-mail-brand strong{font-size:15px}.nz-mail-codebox{padding:8px}.nz-mail-toolbar{padding:0 12px}.nz-mail-content{padding:10px}}
+  `;
+  if (!document.getElementById(style.id)) document.head.appendChild(style);
+
+  let currentCode = "";
+  let activeView = "inbox";
+  let drag = null;
+
+  function app(){ return document.getElementById(APP_ID); }
+  function closeApp(){ app()?.remove(); }
+  function toast(text){ const w=app(); if(!w) return; w.querySelector('.nz-mail-toast')?.remove(); const t=document.createElement('div'); t.className='nz-mail-toast'; t.textContent=text; w.appendChild(t); setTimeout(()=>t.remove(),1800); }
+  function formatDate(iso){ const d=new Date(iso); return d.toLocaleDateString([], {month:'short',day:'numeric',year:'numeric'})+' · '+d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
+
+  function shell(){
+    const w = app();
+    w.innerHTML = `<div class="nz-mail-titlebar"><div class="nz-mail-controls"><button class="nz-mail-ctrl nz-mail-close" aria-label="Close"></button><button class="nz-mail-ctrl nz-mail-minimize" aria-label="Minimize"></button><button class="nz-mail-ctrl nz-mail-maximize" aria-label="Maximize"></button></div><div class="nz-mail-window-title">Contact Mail</div></div><div class="nz-mail-body"></div>`;
+    w.querySelector('.nz-mail-close').onclick = closeApp;
+    w.querySelector('.nz-mail-minimize').onclick = () => w.classList.toggle('nz-mail-min');
+    w.querySelector('.nz-mail-maximize').onclick = () => { w.classList.remove('nz-mail-min'); w.classList.toggle('nz-mail-max'); };
+    const bar = w.querySelector('.nz-mail-titlebar');
+    bar.ondblclick = (e) => { if(!e.target.closest('.nz-mail-controls')) w.querySelector('.nz-mail-maximize').click(); };
+    bar.addEventListener('pointerdown', (e) => {
+      if(e.button!==0 || e.target.closest('.nz-mail-controls') || w.classList.contains('nz-mail-max') || w.classList.contains('nz-mail-min')) return;
+      const r=w.getBoundingClientRect(); drag={x:e.clientX,y:e.clientY,left:r.left,top:r.top};
+      w.style.left=r.left+'px'; w.style.top=r.top+'px'; w.style.transform='none'; bar.setPointerCapture?.(e.pointerId); e.preventDefault();
+    });
+    bar.addEventListener('pointermove', e=>{ if(!drag)return; w.style.left=Math.max(0,drag.left+e.clientX-drag.x)+'px'; w.style.top=Math.max(30,drag.top+e.clientY-drag.y)+'px'; });
+    bar.addEventListener('pointerup', ()=>drag=null); bar.addEventListener('pointercancel', ()=>drag=null);
+  }
+
+  function loginView(){
+    activeView = 'login';
+    const body=app().querySelector('.nz-mail-body');
+    const remembered=localStorage.getItem(USER_KEY)||'';
+    body.innerHTML=`<section class="nz-mail-login"><div class="nz-mail-login-icon">✉</div><h2>Open your mailbox</h2><p>Enter your personal code to see messages sent to that code. You can also send a new message to someone else's code.</p><input class="nz-mail-code-input" maxlength="24" autocomplete="off" placeholder="YOUR CODE" value="${esc(remembered)}"><button class="nz-mail-open-btn">Open mailbox</button><small class="nz-mail-login-note">Prototype mode: messages are stored on this browser until we connect the real database.</small></section>`;
+    const input=body.querySelector('.nz-mail-code-input');
+    const go=()=>{ const code=normalizeCode(input.value); if(!code){ input.focus(); return; } currentCode=code; localStorage.setItem(USER_KEY,code); inboxShell(); };
+    body.querySelector('.nz-mail-open-btn').onclick=go; input.onkeydown=e=>{if(e.key==='Enter')go()}; setTimeout(()=>input.focus(),20);
+  }
+
+  function inboxShell(){
+    activeView='inbox';
+    const body=app().querySelector('.nz-mail-body');
+    body.innerHTML=`<aside class="nz-mail-sidebar"><div class="nz-mail-brand"><strong>Mailbox</strong><small>one-way messages</small></div><div class="nz-mail-codebox"><span>Your code</span><b>${esc(currentCode)}</b></div><button class="nz-mail-nav active" data-view="inbox">Inbox</button><button class="nz-mail-nav" data-view="compose">New message</button><button class="nz-mail-switch">Switch mailbox code</button></aside><section class="nz-mail-main"><div class="nz-mail-toolbar"><strong>Inbox</strong><button class="nz-mail-compose-btn">＋ New message</button></div><div class="nz-mail-content"></div></section>`;
+    body.querySelector('[data-view="inbox"]').onclick=renderInbox;
+    body.querySelector('[data-view="compose"]').onclick=renderCompose;
+    body.querySelector('.nz-mail-compose-btn').onclick=renderCompose;
+    body.querySelector('.nz-mail-switch').onclick=()=>{currentCode='';loginView()};
+    renderInbox();
+  }
+
+  function content(){ return app()?.querySelector('.nz-mail-content'); }
+  function setToolbar(title, compose=true){ const w=app(); if(!w)return; const t=w.querySelector('.nz-mail-toolbar strong'); if(t)t.textContent=title; const b=w.querySelector('.nz-mail-compose-btn'); if(b)b.style.display=compose?'':'none'; w.querySelectorAll('.nz-mail-nav').forEach(n=>n.classList.toggle('active', (title==='Inbox'&&n.dataset.view==='inbox')||(title==='New message'&&n.dataset.view==='compose'))); }
+
+  function renderInbox(){
+    activeView='inbox'; setToolbar('Inbox',true);
+    const c=content(); if(!c)return;
+    const items=loadMessages().filter(m=>normalizeCode(m.to)===currentCode).sort((a,b)=>new Date(b.time)-new Date(a.time));
+    if(!items.length){ c.innerHTML=`<div class="nz-mail-empty"><i>✉</i><strong>No messages yet</strong><span>Messages sent to ${esc(currentCode)} will appear here.</span></div>`; return; }
+    c.innerHTML=items.map(m=>`<button class="nz-mail-row" data-id="${esc(m.id)}"><span class="nz-mail-envelope">✉</span><span class="nz-mail-row-text"><b>From ${esc(m.from)}</b><span>${esc(m.subject||'No subject')}</span><small>${esc(formatDate(m.time))} · ${esc((m.text||'').slice(0,70))}</small></span><span class="nz-mail-chevron">›</span></button>`).join('');
+    c.querySelectorAll('.nz-mail-row').forEach(row=>row.onclick=()=>{const m=loadMessages().find(x=>x.id===row.dataset.id); if(m)renderRead(m)});
+  }
+
+  function renderRead(m){
+    activeView='read'; setToolbar('Message',true);
+    const c=content();
+    c.innerHTML=`<div class="nz-mail-view"><button class="nz-mail-back">← Inbox</button><div class="nz-mail-meta"><span class="nz-mail-envelope">✉</span><div><b>From ${esc(m.from)}</b><span>To ${esc(m.to)} · ${esc(formatDate(m.time))}</span></div></div><div class="nz-mail-subject">${esc(m.subject||'No subject')}</div><article class="nz-mail-message">${esc(m.text||'').replace(/\n/g,'<br>')}</article><div class="nz-mail-noreply">No reply button — messages are one-way. To send something back, create a new message manually.</div></div>`;
+    c.querySelector('.nz-mail-back').onclick=renderInbox;
+  }
+
+  function renderCompose(){
+    activeView='compose'; setToolbar('New message',false);
+    const c=content();
+    c.innerHTML=`<div class="nz-mail-compose"><button class="nz-mail-back">← Inbox</button><h2>New message</h2><div class="nz-mail-label">Recipient code</div><input class="nz-mail-input nz-mail-to" maxlength="24" autocomplete="off" placeholder="ENTER CODE"><div class="nz-mail-label">Subject</div><input class="nz-mail-input nz-mail-subject-input" maxlength="80" placeholder="Subject"><div class="nz-mail-label">Message</div><textarea class="nz-mail-textarea" maxlength="5000" placeholder="Write your message..."></textarea><button class="nz-mail-send">Send message</button><div class="nz-mail-status"></div></div>`;
+    c.querySelector('.nz-mail-back').onclick=renderInbox;
+    c.querySelector('.nz-mail-send').onclick=()=>{
+      const to=normalizeCode(c.querySelector('.nz-mail-to').value);
+      const subject=c.querySelector('.nz-mail-subject-input').value.trim();
+      const text=c.querySelector('.nz-mail-textarea').value.trim();
+      const status=c.querySelector('.nz-mail-status');
+      if(!to||!text){status.textContent='Enter a recipient code and a message.';return;}
+      const items=loadMessages(); items.push({id:uid(),from:currentCode,to,subject,text,time:new Date().toISOString()}); saveMessages(items);
+      status.textContent='Message sent.'; toast('Message sent'); setTimeout(renderInbox,450);
+    };
+    setTimeout(()=>c.querySelector('.nz-mail-to')?.focus(),20);
+  }
+
+  function openApp(){
+    if(app()){ app().classList.remove('nz-mail-min'); return; }
+    const w=document.createElement('section'); w.id=APP_ID; document.body.appendChild(w); shell();
+    currentCode=normalizeCode(localStorage.getItem(USER_KEY)||'');
+    if(currentCode) inboxShell(); else loginView();
+  }
+
+  function isContactTarget(target){
+    const el=target?.closest?.(CONTACT_SELECTORS); if(!el)return false;
+    return el.matches('[data-framer-name="contact"],[name="contact"]') || !!el.closest('[data-framer-name="contact"],[name="contact"]') || el.classList.contains('framer-ssfp21-container');
+  }
+  function intercept(e){
+    if(e.target?.closest?.('#'+APP_ID))return;
+    if(!isContactTarget(e.target))return;
+    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation?.(); openApp();
+  }
+
+  window.addEventListener('click',intercept,true);
+  window.addEventListener('pointerup',intercept,true);
+  window.addEventListener('keydown',e=>{if(e.key==='Escape'&&app())closeApp()});
+
+  function patchContact(){
+    document.querySelectorAll('[data-framer-name="contact"],[name="contact"]').forEach(el=>{
+      el.style.cursor='pointer'; el.setAttribute('data-nz-mail-trigger','1');
+      if(el.dataset.nzMailBound)return; el.dataset.nzMailBound='1';
+      el.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();openApp()},true);
+    });
+    // If the old Framer contact form/window appears, hide only that old content.
+    document.querySelectorAll('body *').forEach(el=>{
+      if(el.closest?.('#'+APP_ID))return;
+      const t=(el.innerText||'').trim();
+      if(t.length>35 && /Get In Touch:/i.test(t) && /Enter your message/i.test(t) && /Submit/i.test(t)) el.style.display='none';
+    });
+  }
+  const obs=new MutationObserver(patchContact); obs.observe(document.documentElement,{childList:true,subtree:true});
+  patchContact(); setTimeout(patchContact,500); setTimeout(patchContact,1800);
+})();</script>
+</body></html>
